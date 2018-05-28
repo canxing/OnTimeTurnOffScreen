@@ -5,4 +5,5 @@
     <string name="device_admin_description">Turns the screen off and locks your device with a single touch.</string>
     <string name="admin_receiver_status_enabled">Screen Off was added as Device Administrator</string>
     <string name="admin_receiver_status_disabled">Screen Off was removed from Device Administrators list</string>
+    <string name="everyday">每天</string>
 </resources>

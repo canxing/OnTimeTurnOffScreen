@@ -52,8 +52,12 @@
         <receiver
             android:name=".ScreenOnReceiver"
             android:enabled="true"
-            android:exported="true">
-        </receiver>
+            android:exported="true"></receiver>
+
+        <service
+            android:name=".RegisterReceiverService"
+            android:enabled="true"
+            android:exported="true"></service>
     </application>
 
 </manifest>

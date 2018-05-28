@@ -24,11 +24,7 @@ public class ScreenOnReceiver extends BroadcastReceiver {
             }
             Calendar now = Calendar.getInstance();
             String nowString = now.get(Calendar.HOUR_OF_DAY) + ":" + now.get(Calendar.MINUTE);
-            Log.i("now", nowString);
             String other = "17:20";
-            Log.i("isAfter", TimeComparing.isAfter(nowString, other) + "");
-            Log.i("isAfter", TimeComparing.isEquals(nowString, other) + "");
-            Log.i("isAfter", TimeComparing.isBefore(nowString, other) + "");
             if(TimeComparing.isBefore(nowString, other)) {
                 mDPM.lockNow();
             }

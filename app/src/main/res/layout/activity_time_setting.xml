@@ -9,38 +9,47 @@
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="200dp">
-        <TimePicker
-            android:id="@+id/start_time_picker"
-            android:timePickerMode="spinner"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_centerVertical="true"
-            />
-    </LinearLayout>
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="200dp">
-        <TimePicker
-            android:id="@+id/end_time_picker"
-            android:timePickerMode="spinner"
+            android:layout_height="200dp">
+            <TimePicker
+                android:id="@+id/start_time_picker"
+                android:timePickerMode="spinner"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_centerVertical="true" />
+        </LinearLayout>
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_centerVertical="true"
-            />
-    </LinearLayout>
+            android:layout_height="200dp">
+            <TimePicker
+                android:id="@+id/end_time_picker"
+                android:timePickerMode="spinner"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_centerVertical="true" />
+        </LinearLayout>
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="50dp">
+                <RadioButton
+                    android:id="@+id/every_day_radio"
+                    android:text="@string/everyday"
+                    android:layout_centerHorizontal="true"
+                    android:layout_width="100dp"
+                    android:layout_height="match_parent" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="50dp">
-        <Button
-            android:id="@+id/save"
-            android:onClick="saveBtnListener"
-            android:text="保存"
+            </RelativeLayout>
+
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-    </LinearLayout>
+            android:layout_height="50dp">
+            <Button
+                android:id="@+id/save"
+                android:onClick="saveBtnListener"
+                android:text="保存"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
     </LinearLayout>
 </android.support.constraint.ConstraintLayout>

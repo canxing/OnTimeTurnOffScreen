@@ -11,17 +11,24 @@
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <ListView
+                android:id="@+id/time_show_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
 
-    <Button
-        android:id="@+id/screen_off_btn"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="关闭屏幕" />
-    <Button
-        android:id="@+id/add_time"
-        android:text="添加"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+            </ListView>
+            <Button
+                android:id="@+id/add_time"
+                android:text="添加"
+                android:layout_alignParentBottom="true"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+        </RelativeLayout>
+
     </LinearLayout>
 
 
