@@ -1,12 +1,11 @@
 package com.example.canxing.ontimeturnoffscreen;
 
 import android.content.ContentValues;
-import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.RadioButton;
 import android.widget.TimePicker;
 import android.widget.Toast;
@@ -16,13 +15,13 @@ import com.example.canxing.ontimeturnoffscreen.model.TimePeriod;
 import com.example.canxing.ontimeturnoffscreen.util.DevicePolicyUtil;
 import com.example.canxing.ontimeturnoffscreen.util.TimeComparing;
 
-import java.sql.Time;
 import java.util.Calendar;
 
 public class TimeSettingActivity extends AppCompatActivity {
+    public static final int RESULTCODE = 0x001;
     private TimePicker startTime;
     private TimePicker endTime;
-    private RadioButton everydayRadio;
+    private CheckBox everydayRadio;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,14 +74,15 @@ public class TimeSettingActivity extends AppCompatActivity {
         db.insert(TimePeriod.TABLENAME, null, values);
         dbHelper.close();
 
-        Intent intent = new Intent();
-        intent.putExtra(TimePeriod.COLUMN_START_HOUR, startHour);
-        intent.putExtra(TimePeriod.COLUMN_START_MINUTE, startMinute);
-        intent.putExtra(TimePeriod.COLUMN_END_HOUR, endHour);
-        intent.putExtra(TimePeriod.COLUMN_END_MINUTE, endMinute);
-        intent.putExtra(TimePeriod.COLUMN_IS_ON, timePeriod.getIsOn());
-        intent.putExtra(TimePeriod.COLUMN_IS_EVERY_DAY, timePeriod.getIsEveryDay());
-        setResult(1, intent);
+//        Intent intent = new Intent();
+//        intent.putExtra(TimePeriod.COLUMN_START_HOUR, startHour);
+//        intent.putExtra(TimePeriod.COLUMN_START_MINUTE, startMinute);
+//        intent.putExtra(TimePeriod.COLUMN_END_HOUR, endHour);
+//        intent.putExtra(TimePeriod.COLUMN_END_MINUTE, endMinute);
+//        intent.putExtra(TimePeriod.COLUMN_IS_ON, timePeriod.getIsOn());
+//        intent.putExtra(TimePeriod.COLUMN_IS_EVERY_DAY, timePeriod.getIsEveryDay());
+//        setResult(1, intent);
+        setResult(RESULTCODE, null);
         finish();
     }
 

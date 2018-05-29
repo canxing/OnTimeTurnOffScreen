@@ -52,12 +52,14 @@
         <receiver
             android:name=".ScreenOnReceiver"
             android:enabled="true"
-            android:exported="true"></receiver>
+            android:exported="true" />
 
         <service
             android:name=".RegisterReceiverService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true" />
+
+        <activity android:name=".ModifyTimeActivity"></activity>
     </application>
 
 </manifest>

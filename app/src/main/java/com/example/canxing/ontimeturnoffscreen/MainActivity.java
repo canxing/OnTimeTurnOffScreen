@@ -11,10 +11,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ListView;
-import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
 
@@ -22,13 +22,13 @@ import com.example.canxing.ontimeturnoffscreen.db.DBHelper;
 import com.example.canxing.ontimeturnoffscreen.model.TimePeriod;
 import com.example.canxing.ontimeturnoffscreen.util.DevicePolicyUtil;
 
-import org.w3c.dom.Text;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     static final String TAG = "ScreenOffActivity";
+    public static final int SETTINGCODE = 0x001;
+    public static final int MODIFYCODE = 0x002;
 
     private ListView timeShowView;
     private Button addBtn;
@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        clearDB();
+        //clearDB();
         init();
         startForegroundService();
     }
@@ -87,10 +87,25 @@ public class MainActivity extends AppCompatActivity {
         addBtn = findViewById(R.id.add_time);
         timeShowView = findViewById(R.id.time_show_view);
         adapter = new TimePeriodAdapter(this, getTimes());
+        timeShowView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Log.i("listview onItemClickListener", "start....");
+                TimePeriod timePeriod = (TimePeriod) parent.getItemAtPosition(position);
+                Intent intent = new Intent(MainActivity.this, ModifyTimeActivity.class);
+                intent.putExtra(TimePeriod.COLUMN_START_HOUR, timePeriod.getStartHour());
+                intent.putExtra(TimePeriod.COLUMN_START_MINUTE, timePeriod.getStartMinute());
+                intent.putExtra(TimePeriod.COLUMN_END_HOUR, timePeriod.getEndHour());
+                intent.putExtra(TimePeriod.COLUMN_END_MINUTE, timePeriod.getEndMinute());
+                intent.putExtra(TimePeriod.COLUMN_IS_EVERY_DAY, timePeriod.getIsEveryDay());
+                startActivityForResult(intent, MODIFYCODE);
+                Log.i("listview onItemClickListener", "over....");
+            }
+        });
         timeShowView.setAdapter(adapter);
         addBtn.setOnClickListener((view)->{
             Intent intent = new Intent(this, TimeSettingActivity.class);
-            startActivityForResult(intent, 1);
+            startActivityForResult(intent, SETTINGCODE);
         });
         if(!DevicePolicyUtil.isAdmin(this )) {
             registerDevicePolicy();
@@ -130,18 +145,25 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         Log.i("onActivityResult" , requestCode + "-" + resultCode);
-        if(requestCode == 1 && resultCode == 1){
-            if(data != null){
-                TimePeriod time = new TimePeriod();
-                time.setStartHour(data.getIntExtra(TimePeriod.COLUMN_START_HOUR, 0));
-                time.setStartMinute(data.getIntExtra(TimePeriod.COLUMN_START_MINUTE, 0));
-                time.setEndHour(data.getIntExtra(TimePeriod.COLUMN_END_HOUR, 0));
-                time.setEndMinute(data.getIntExtra(TimePeriod.COLUMN_END_MINUTE, 0));
-                time.setIsOn(data.getIntExtra(TimePeriod.COLUMN_IS_ON, 0));
-                time.setIsEveryDay(data.getIntExtra(TimePeriod.COLUMN_IS_EVERY_DAY, 0));
-                adapter.add(time);
-                adapter.notifyDataSetChanged();
-            }
+        if(requestCode == SETTINGCODE && resultCode == 1){
+            adapter.clear();
+            adapter.addAll(getTimes());
+            adapter.notifyDataSetChanged();
+//            if(data != null){
+//                TimePeriod time = new TimePeriod();
+//                time.setStartHour(data.getIntExtra(TimePeriod.COLUMN_START_HOUR, 0));
+//                time.setStartMinute(data.getIntExtra(TimePeriod.COLUMN_START_MINUTE, 0));
+//                time.setEndHour(data.getIntExtra(TimePeriod.COLUMN_END_HOUR, 0));
+//                time.setEndMinute(data.getIntExtra(TimePeriod.COLUMN_END_MINUTE, 0));
+//                time.setIsOn(data.getIntExtra(TimePeriod.COLUMN_IS_ON, 0));
+//                time.setIsEveryDay(data.getIntExtra(TimePeriod.COLUMN_IS_EVERY_DAY, 0));
+//                adapter.add(time);
+//                adapter.notifyDataSetChanged();
+//            }
+        } else if (requestCode == MODIFYCODE && resultCode == ModifyTimeActivity.RESULTCODE) {
+            adapter.clear();
+            adapter.addAll(getTimes());
+            adapter.notifyDataSetChanged();
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
@@ -152,6 +174,13 @@ public class MainActivity extends AppCompatActivity {
         public TimePeriodAdapter(Context context, List<TimePeriod> times ){
             this.context = context;
             this.times.addAll(times);
+        }
+
+        /**
+         * 清空数据
+         */
+        public void clear() {
+            times.clear();
         }
         public void add(TimePeriod time) {
             times.add(time);

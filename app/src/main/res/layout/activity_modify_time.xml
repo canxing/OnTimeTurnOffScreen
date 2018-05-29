@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".TimeSettingActivity">
+    tools:context=".ModifyTimeActivity">
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
@@ -13,7 +13,7 @@
             android:layout_width="match_parent"
             android:layout_height="200dp">
             <TimePicker
-                android:id="@+id/start_time_picker"
+                android:id="@+id/modify_start_time_picker"
                 android:timePickerMode="spinner"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -23,30 +23,30 @@
             android:layout_width="match_parent"
             android:layout_height="200dp">
             <TimePicker
-                android:id="@+id/end_time_picker"
+                android:id="@+id/modify_end_time_picker"
                 android:timePickerMode="spinner"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_centerVertical="true" />
         </LinearLayout>
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="50dp">
-                <CheckBox
-                    android:id="@+id/every_day_radio"
-                    android:text="@string/everyday"
-                    android:layout_centerHorizontal="true"
-                    android:layout_width="100dp"
-                    android:layout_height="match_parent" />
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="50dp">
+            <CheckBox
+                android:id="@+id/modify_every_day_radio"
+                android:text="@string/everyday"
+                android:layout_centerHorizontal="true"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content" />
 
-            </RelativeLayout>
+        </RelativeLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="50dp">
             <Button
-                android:id="@+id/save"
-                android:onClick="saveBtnListener"
+                android:id="@+id/modify"
+                android:onClick="modifyBtnListener"
                 android:text="保存"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
