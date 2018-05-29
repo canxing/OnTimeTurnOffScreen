@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import com.example.canxing.ontimeturnoffscreen.model.TimePeriod;
 
 public class DBHelper extends SQLiteOpenHelper {
+    public static final String DBNAME = "db";
     public DBHelper(Context context, String name) {
         super(context, name, null, 1);
     }

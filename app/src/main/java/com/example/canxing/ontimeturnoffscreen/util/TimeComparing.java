@@ -91,4 +91,25 @@ public class TimeComparing {
         }
         return Tuple.fourTuple(startHour, startMinute, endHour, endMinute);
     }
+
+    /**
+     * 计算两个时间点之间的差值
+     * @param time
+     * @param startTime
+     * @return
+     */
+    public static int sub(String time, String startTime) {
+        FourTuple<Integer, Integer, Integer, Integer> timeTuple
+                = toIntTuple(time, startTime);
+        if(timeTuple == null) return Integer.MAX_VALUE;
+        int startHour = timeTuple.first;
+        int startMinute = timeTuple.second;
+        int endHour = timeTuple.third;
+        int endMinute = timeTuple.fourth;
+        if (isAfter(time, startTime)) {
+            return (23 - startHour) * 60 + 60 - startMinute + endHour * 60 + endMinute;
+        } else {
+            return (endHour - startHour) * 60 + endMinute - startMinute;
+        }
+    }
 }

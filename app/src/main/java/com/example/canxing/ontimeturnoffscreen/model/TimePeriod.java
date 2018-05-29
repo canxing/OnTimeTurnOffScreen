@@ -12,10 +12,10 @@ public class TimePeriod {
     public static final String COLUMN_START_MINUTE = "startminute";
     public static final String COLUMN_END_HOUR = "endhour";
     public static final String COLUMN_END_MINUTE = "endminute";
-    public static final String COLUMN_IS_ON = "on";
+    public static final String COLUMN_IS_ON = "ison";
     public static final String COLUMN_IS_EVERY_DAY = "everyday";
     public static final String CREATE_TABLE =  "create table " + TABLENAME + "( "
-            + COLUMN_ID + " int primary key autoincrement, "
+            + COLUMN_ID + " integer primary key autoincrement, "
             + COLUMN_START_HOUR + " int not null, "
             + COLUMN_START_MINUTE + " int not null, "
             + COLUMN_END_HOUR + " int not null, "
@@ -106,6 +106,19 @@ public class TimePeriod {
 
     public int getIsOn() {
         return isOn;
+    }
+
+    @Override
+    public String toString() {
+        return "TimePeriod{" +
+                "id=" + id +
+                ", startHour=" + startHour +
+                ", startMinute=" + startMinute +
+                ", endHour=" + endHour +
+                ", endMinute=" + endMinute +
+                ", isOn=" + isOn +
+                ", isEveryDay=" + isEveryDay +
+                '}';
     }
 
     public int getIsEveryDay() {

@@ -60,10 +60,10 @@ public class TimeSettingActivity extends AppCompatActivity {
                 timePeriod.getEndTime(),
                 now.get(Calendar.HOUR_OF_DAY) + ":" + now.get(Calendar.MINUTE));
          // 如果点击保存的时间是在要关闭的时间段内
-        if(isInPeriod) {
-            DevicePolicyUtil.lockNow(this);
-        }
-        DBHelper dbHelper = new DBHelper(this, "db");
+//        if(isInPeriod) {
+//            DevicePolicyUtil.lockNow(this);
+//        }
+        DBHelper dbHelper = new DBHelper(this, DBHelper.DBNAME);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(TimePeriod.COLUMN_START_HOUR, timePeriod.getStartHour());
@@ -75,14 +75,14 @@ public class TimeSettingActivity extends AppCompatActivity {
         db.insert(TimePeriod.TABLENAME, null, values);
         dbHelper.close();
 
-//        Intent intent = new Intent();
-//        intent.putExtra(TimePeriod.COLUMN_START_HOUR, startHour);
-//        intent.putExtra(TimePeriod.COLUMN_START_MINUTE, startMinute);
-//        intent.putExtra(TimePeriod.COLUMN_END_HOUR, endHour);
-//        intent.putExtra(TimePeriod.COLUMN_END_MINUTE, endMinute);
-//        intent.putExtra(TimePeriod.COLUMN_IS_ON, timePeriod.getIsOn());
-//        intent.putExtra(TimePeriod.COLUMN_IS_EVERY_DAY, timePeriod.getIsEveryDay());
-        setResult(1, null);
+        Intent intent = new Intent();
+        intent.putExtra(TimePeriod.COLUMN_START_HOUR, startHour);
+        intent.putExtra(TimePeriod.COLUMN_START_MINUTE, startMinute);
+        intent.putExtra(TimePeriod.COLUMN_END_HOUR, endHour);
+        intent.putExtra(TimePeriod.COLUMN_END_MINUTE, endMinute);
+        intent.putExtra(TimePeriod.COLUMN_IS_ON, timePeriod.getIsOn());
+        intent.putExtra(TimePeriod.COLUMN_IS_EVERY_DAY, timePeriod.getIsEveryDay());
+        setResult(1, intent);
         finish();
     }
 

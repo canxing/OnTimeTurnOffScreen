@@ -3,6 +3,8 @@ package com.example.canxing.ontimeturnoffscreen;
 import android.app.admin.DevicePolicyManager;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -16,6 +18,7 @@ import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import com.example.canxing.ontimeturnoffscreen.db.DBHelper;
 import com.example.canxing.ontimeturnoffscreen.model.TimePeriod;
 import com.example.canxing.ontimeturnoffscreen.util.DevicePolicyUtil;
 
@@ -25,21 +28,56 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
-    static final String LOG_TAG = "ScreenOffActivity";
+    static final String TAG = "ScreenOffActivity";
 
     private ListView timeShowView;
     private Button addBtn;
-    private int startHour;
-    private int startMinute;
-    private int endHour;
-    private int endMinute;
+    private TimePeriodAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        clearDB();
         init();
+        startForegroundService();
+    }
+
+    /**
+     * 清空数据库中的时间段
+     */
+    private void clearDB() {
+        DBHelper dbHelper = new DBHelper(this, DBHelper.DBNAME);
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        db.delete(TimePeriod.TABLENAME, null, null);
+        dbHelper.close();
+    }
+
+    /**
+     * 返回数据库中的所有时间段
+     * @return
+     */
+    private List<TimePeriod> getTimes() {
+        List<TimePeriod> times = new ArrayList<>();
+        DBHelper dbHelper = new DBHelper(this, DBHelper.DBNAME);
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        String[] columns = {TimePeriod.COLUMN_ID, TimePeriod.COLUMN_START_HOUR, TimePeriod.COLUMN_START_MINUTE,
+            TimePeriod.COLUMN_END_MINUTE, TimePeriod.COLUMN_END_HOUR, TimePeriod.COLUMN_IS_ON, TimePeriod.COLUMN_IS_EVERY_DAY};
+        Cursor cursor = db.query(true, TimePeriod.TABLENAME, columns, null, null, null, null, null, null);
+        while(cursor.moveToNext()) {
+            TimePeriod time = new TimePeriod();
+            time.setId(cursor.getInt(cursor.getColumnIndex(TimePeriod.COLUMN_ID)));
+            time.setStartHour(cursor.getInt(cursor.getColumnIndex(TimePeriod.COLUMN_START_HOUR)));
+            time.setStartMinute(cursor.getInt(cursor.getColumnIndex(TimePeriod.COLUMN_START_MINUTE)));
+            time.setEndHour(cursor.getInt(cursor.getColumnIndex(TimePeriod.COLUMN_END_HOUR)));
+            time.setEndMinute(cursor.getInt(cursor.getColumnIndex(TimePeriod.COLUMN_END_MINUTE)));
+            time.setIsOn(cursor.getInt(cursor.getColumnIndex(TimePeriod.COLUMN_IS_ON)));
+            time.setIsEveryDay(cursor.getInt(cursor.getColumnIndex(TimePeriod.COLUMN_IS_EVERY_DAY)));
+            times.add(time);
+            Log.i(TAG + "getTimes", time.toString());
+        }
+        dbHelper.close();
+        return times;
     }
 
     /**
@@ -48,6 +86,8 @@ public class MainActivity extends AppCompatActivity {
     private void init() {
         addBtn = findViewById(R.id.add_time);
         timeShowView = findViewById(R.id.time_show_view);
+        adapter = new TimePeriodAdapter(this, getTimes());
+        timeShowView.setAdapter(adapter);
         addBtn.setOnClickListener((view)->{
             Intent intent = new Intent(this, TimeSettingActivity.class);
             startActivityForResult(intent, 1);
@@ -92,14 +132,15 @@ public class MainActivity extends AppCompatActivity {
         Log.i("onActivityResult" , requestCode + "-" + resultCode);
         if(requestCode == 1 && resultCode == 1){
             if(data != null){
-                Log.i("onActivityResult", "data not null");
-                startHour = data.getIntExtra("startHour", 0);
-                startMinute = data.getIntExtra("startMinute", 0);
-                endHour = data.getIntExtra("endHour", 0);
-                endMinute = data.getIntExtra("endMinute", 0);
-                Log.i("onActivityResult", "");
-                Log.i("start time", startHour + " : " + startMinute);
-                Log.i("end time", endHour + " : " + endMinute);
+                TimePeriod time = new TimePeriod();
+                time.setStartHour(data.getIntExtra(TimePeriod.COLUMN_START_HOUR, 0));
+                time.setStartMinute(data.getIntExtra(TimePeriod.COLUMN_START_MINUTE, 0));
+                time.setEndHour(data.getIntExtra(TimePeriod.COLUMN_END_HOUR, 0));
+                time.setEndMinute(data.getIntExtra(TimePeriod.COLUMN_END_MINUTE, 0));
+                time.setIsOn(data.getIntExtra(TimePeriod.COLUMN_IS_ON, 0));
+                time.setIsEveryDay(data.getIntExtra(TimePeriod.COLUMN_IS_EVERY_DAY, 0));
+                adapter.add(time);
+                adapter.notifyDataSetChanged();
             }
         }
         super.onActivityResult(requestCode, resultCode, data);
@@ -108,6 +149,13 @@ public class MainActivity extends AppCompatActivity {
         private List<TimePeriod> times = new ArrayList<>();
         private Context context;
 
+        public TimePeriodAdapter(Context context, List<TimePeriod> times ){
+            this.context = context;
+            this.times.addAll(times);
+        }
+        public void add(TimePeriod time) {
+            times.add(time);
+        }
         @Override
         public int getCount() {
             return times.size();
@@ -139,7 +187,11 @@ public class MainActivity extends AppCompatActivity {
             TimePeriod time = times.get(position);
             String period = time.getStartTime() + "-" + time.getEndTime();
             holder.timeText.setText(period);
-            holder.eveyDayText.setText(time.getIsEveryDay());
+            if(time.getIsEveryDay() == TimePeriod.ON){
+                holder.eveyDayText.setText("每天");
+            } else {
+                holder.eveyDayText.setText("一次");
+            }
             if(time.getIsOn() == TimePeriod.ON) {
                 holder.onSwitch.setChecked(true);
             } else {
@@ -147,6 +199,11 @@ public class MainActivity extends AppCompatActivity {
             }
             return convertView;
         }
+
+        public void addAll(List<TimePeriod> times) {
+            this.times.addAll(times);
+        }
+
         class ViewHolder {
             TextView timeText;
             Switch onSwitch;
