@@ -10,11 +10,13 @@ import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import com.example.canxing.ontimeturnoffscreen.db.DBHelper;
+import com.example.canxing.ontimeturnoffscreen.db.TimePeriodDB;
 import com.example.canxing.ontimeturnoffscreen.model.TimePeriod;
 import com.example.canxing.ontimeturnoffscreen.util.DevicePolicyUtil;
 import com.example.canxing.ontimeturnoffscreen.util.TimeComparing;
 
 import java.util.Calendar;
+import java.util.List;
 
 public class ScreenOnReceiver extends BroadcastReceiver {
     @Override
@@ -23,50 +25,25 @@ public class ScreenOnReceiver extends BroadcastReceiver {
         if(action.equals(Intent.ACTION_SCREEN_ON)){
             Calendar now = Calendar.getInstance();
             String nowString = now.get(Calendar.HOUR_OF_DAY) + ":" + now.get(Calendar.MINUTE);
-            TimePeriod period = getCloseTime(context, nowString);
-            if(period != null) {
+            nowString = "17:07";
+            boolean nowTimeInPeriod = isTimeInPeriod(context, nowString);
+            if(nowTimeInPeriod) {
                 DevicePolicyUtil.lockNow(context);
-                Log.i("screen on receiver", period.toString());
+                Log.i("screen on receiver", "锁屏啦");
             } else {
-                Log.i("screen on receiver", "null");
+                Log.i("screen on receiver", "锁屏失败啦");
             }
         }
     }
-    private TimePeriod getCloseTime(Context context, String time) {
-        DBHelper dbHelper = new DBHelper(context, DBHelper.DBNAME);
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
-        String[] columns = {TimePeriod.COLUMN_START_HOUR, TimePeriod.COLUMN_START_MINUTE, TimePeriod.COLUMN_END_HOUR,
-            TimePeriod.COLUMN_END_MINUTE};
-        String selection = "(" + TimePeriod.COLUMN_START_HOUR + " < ? and ? < " + TimePeriod.COLUMN_END_HOUR + ") or "
-                + "(" + TimePeriod.COLUMN_START_HOUR + " = ? and ? = " + TimePeriod.COLUMN_END_HOUR + " and "
-                    + TimePeriod.COLUMN_START_MINUTE + " <= ? and ? <= " + TimePeriod.COLUMN_END_MINUTE + ") or "
-                + "(" + TimePeriod.COLUMN_START_HOUR + " = ? and ? < " + TimePeriod.COLUMN_END_HOUR + " and "
-                    + TimePeriod.COLUMN_START_MINUTE + " <= ?) or "
-                + "(" + TimePeriod.COLUMN_START_HOUR + " < ? and ? = " + TimePeriod.COLUMN_END_HOUR + " and "
-                    + " ? <= " + TimePeriod.COLUMN_END_MINUTE + ")";
-        String hour = time.split(":")[0];
-        String minute = time.split(":")[1];
-        String[] args = {hour, hour,
-                hour, hour, minute, minute,
-                hour, hour, minute,
-                hour, hour, minute};
-        Cursor cursor =
-                db.query(false, TimePeriod.TABLENAME, columns, selection, args, null, null, null, null);
-        int min = Integer.MIN_VALUE;
-        TimePeriod result = null;
-        while(cursor.moveToNext()) {
-            TimePeriod timePeriod = new TimePeriod();
-            timePeriod.setStartHour(cursor.getInt(cursor.getColumnIndex(TimePeriod.COLUMN_START_HOUR)));
-            timePeriod.setStartMinute(cursor.getInt(cursor.getColumnIndex(TimePeriod.COLUMN_START_MINUTE)));
-            timePeriod.setEndHour(cursor.getInt(cursor.getColumnIndex(TimePeriod.COLUMN_END_HOUR)));
-            timePeriod.setEndMinute(cursor.getInt(cursor.getColumnIndex(TimePeriod.COLUMN_END_MINUTE)));
-            int value = TimeComparing.sub(time, timePeriod.getStartTime());
-            Log.i("query", timePeriod.toString());
-            if(value > min) {
-                min = value;
-                result = timePeriod;
+
+    private boolean isTimeInPeriod(Context context, String nowString) {
+        List<TimePeriod> times = TimePeriodDB.getTimes(context);
+        for(TimePeriod time : times) {
+            if(TimeComparing.inPeriod(time.getStartTime(), time.getEndTime(), nowString)) {
+                return true;
             }
         }
-        return result;
+        return false;
     }
+
 }

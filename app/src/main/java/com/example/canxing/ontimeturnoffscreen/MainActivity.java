@@ -19,6 +19,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import com.example.canxing.ontimeturnoffscreen.db.DBHelper;
+import com.example.canxing.ontimeturnoffscreen.db.TimePeriodDB;
 import com.example.canxing.ontimeturnoffscreen.model.TimePeriod;
 import com.example.canxing.ontimeturnoffscreen.util.DevicePolicyUtil;
 
@@ -57,28 +58,6 @@ public class MainActivity extends AppCompatActivity {
      * 返回数据库中的所有时间段
      * @return
      */
-    private List<TimePeriod> getTimes() {
-        List<TimePeriod> times = new ArrayList<>();
-        DBHelper dbHelper = new DBHelper(this, DBHelper.DBNAME);
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
-        String[] columns = {TimePeriod.COLUMN_ID, TimePeriod.COLUMN_START_HOUR, TimePeriod.COLUMN_START_MINUTE,
-            TimePeriod.COLUMN_END_MINUTE, TimePeriod.COLUMN_END_HOUR, TimePeriod.COLUMN_IS_ON, TimePeriod.COLUMN_IS_EVERY_DAY};
-        Cursor cursor = db.query(true, TimePeriod.TABLENAME, columns, null, null, null, null, null, null);
-        while(cursor.moveToNext()) {
-            TimePeriod time = new TimePeriod();
-            time.setId(cursor.getInt(cursor.getColumnIndex(TimePeriod.COLUMN_ID)));
-            time.setStartHour(cursor.getInt(cursor.getColumnIndex(TimePeriod.COLUMN_START_HOUR)));
-            time.setStartMinute(cursor.getInt(cursor.getColumnIndex(TimePeriod.COLUMN_START_MINUTE)));
-            time.setEndHour(cursor.getInt(cursor.getColumnIndex(TimePeriod.COLUMN_END_HOUR)));
-            time.setEndMinute(cursor.getInt(cursor.getColumnIndex(TimePeriod.COLUMN_END_MINUTE)));
-            time.setIsOn(cursor.getInt(cursor.getColumnIndex(TimePeriod.COLUMN_IS_ON)));
-            time.setIsEveryDay(cursor.getInt(cursor.getColumnIndex(TimePeriod.COLUMN_IS_EVERY_DAY)));
-            times.add(time);
-            Log.i(TAG + "getTimes", time.toString());
-        }
-        dbHelper.close();
-        return times;
-    }
 
     /**
      * 初始化函数，用于初始化控件以及响应等操作的初始化
@@ -86,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
     private void init() {
         addBtn = findViewById(R.id.add_time);
         timeShowView = findViewById(R.id.time_show_view);
-        adapter = new TimePeriodAdapter(this, getTimes());
+        adapter = new TimePeriodAdapter(this, TimePeriodDB.getTimes(this));
         timeShowView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -147,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
         Log.i("onActivityResult" , requestCode + "-" + resultCode);
         if(requestCode == SETTINGCODE && resultCode == 1){
             adapter.clear();
-            adapter.addAll(getTimes());
+            adapter.addAll(TimePeriodDB.getTimes(this));
             adapter.notifyDataSetChanged();
 //            if(data != null){
 //                TimePeriod time = new TimePeriod();
@@ -162,7 +141,7 @@ public class MainActivity extends AppCompatActivity {
 //            }
         } else if (requestCode == MODIFYCODE && resultCode == ModifyTimeActivity.RESULTCODE) {
             adapter.clear();
-            adapter.addAll(getTimes());
+            adapter.addAll(TimePeriodDB.getTimes(this));
             adapter.notifyDataSetChanged();
         }
         super.onActivityResult(requestCode, resultCode, data);
