@@ -99,11 +99,14 @@ public class ModifyTimeActivity extends AppCompatActivity {
             //如果没有修改就不用管它，让它自生自灭吧
         } else {
             //将修改保存在数据库中，并返回
-            TimePeriod timePeriod = new TimePeriod(startHour, startMinute, endHour, endMinute);
+            TimePeriod timePeriod = new TimePeriod(modifyStartHour, modifyStartMinute, modifyEndHour, modifyEndMinute);
             Calendar now = Calendar.getInstance();
-            boolean isInPeriod = TimeComparing.inPeriod(timePeriod.getStartTime(),
-                    timePeriod.getEndTime(),
-                    now.get(Calendar.HOUR_OF_DAY) + ":" + now.get(Calendar.MINUTE));
+            String nowString = now.get(Calendar.HOUR_OF_DAY) + ":" + now.get(Calendar.MINUTE);
+            boolean isInPeriod = (TimeComparing.isAfter(nowString, timePeriod.getStartTime()) ||
+                    TimeComparing.isEquals(nowString, timePeriod.getStartTime()))
+                    &&
+                    (TimeComparing.isBefore(nowString, timePeriod.getEndTime()) ||
+                            TimeComparing.isEquals(nowString, timePeriod.getEndTime()));
             if(isInPeriod) {
                 //如果当前时间正好处在修改后的时间段之间
                 DevicePolicyUtil.lockNow(this);
