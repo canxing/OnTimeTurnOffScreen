@@ -60,9 +60,9 @@ public class TimeSettingActivity extends AppCompatActivity {
                 timePeriod.getEndTime(),
                 now.get(Calendar.HOUR_OF_DAY) + ":" + now.get(Calendar.MINUTE));
          // 如果点击保存的时间是在要关闭的时间段内
-//        if(isInPeriod) {
-//            DevicePolicyUtil.lockNow(this);
-//        }
+        if(isInPeriod) {
+            DevicePolicyUtil.lockNow(this);
+        }
         DBHelper dbHelper = new DBHelper(this, DBHelper.DBNAME);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
