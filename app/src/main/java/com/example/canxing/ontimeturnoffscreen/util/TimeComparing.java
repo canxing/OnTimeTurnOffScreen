@@ -20,12 +20,16 @@ public class TimeComparing {
      * @return
      */
     public static boolean inPeriod(String startTime, String endTime, String t1) {
-        if(isBefore(startTime, endTime)) {
-            return isAfter(t1, startTime) && isBefore(t1, endTime);
-        } else if (isAfter(startTime, endTime)) {
-            return !isAfter(t1, endTime) && !isBefore(t1, startTime);
+        if(isEquals(startTime, t1) || isEquals(endTime, t1)) {
+            return true;
         } else {
-            return isEquals(t1, startTime);
+            if (isBefore(startTime, endTime)) {
+                return isAfter(t1, startTime) && isBefore(t1, endTime);
+            } else if (isAfter(startTime, endTime)) {
+                return !isAfter(t1, endTime) && !isBefore(t1, startTime);
+            } else {
+                return isEquals(t1, startTime);
+            }
         }
     }
     /**

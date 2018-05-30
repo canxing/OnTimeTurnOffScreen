@@ -102,11 +102,13 @@ public class ModifyTimeActivity extends AppCompatActivity {
             TimePeriod timePeriod = new TimePeriod(modifyStartHour, modifyStartMinute, modifyEndHour, modifyEndMinute);
             Calendar now = Calendar.getInstance();
             String nowString = now.get(Calendar.HOUR_OF_DAY) + ":" + now.get(Calendar.MINUTE);
-            boolean isInPeriod = (TimeComparing.isAfter(nowString, timePeriod.getStartTime()) ||
-                    TimeComparing.isEquals(nowString, timePeriod.getStartTime()))
-                    &&
-                    (TimeComparing.isBefore(nowString, timePeriod.getEndTime()) ||
-                            TimeComparing.isEquals(nowString, timePeriod.getEndTime()));
+            boolean isInPeriod =
+                    TimeComparing.inPeriod(timePeriod.getStartTime(), timePeriod.getEndTime(), nowString);
+//                    TimeComparing.isAfter(nowString, timePeriod.getStartTime()) ||
+//                    TimeComparing.isEquals(nowString, timePeriod.getStartTime()))
+//                    &&
+//                    (TimeComparing.isBefore(nowString, timePeriod.getEndTime()) ||
+//                            TimeComparing.isEquals(nowString, timePeriod.getEndTime()));
             if(isInPeriod) {
                 //如果当前时间正好处在修改后的时间段之间
                 DevicePolicyUtil.lockNow(this);

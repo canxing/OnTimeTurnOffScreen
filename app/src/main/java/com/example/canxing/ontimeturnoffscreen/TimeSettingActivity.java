@@ -56,11 +56,12 @@ public class TimeSettingActivity extends AppCompatActivity {
         }
         Calendar now = Calendar.getInstance();
         String nowString = now.get(Calendar.HOUR_OF_DAY) + ":" + now.get(Calendar.MINUTE);
-        boolean isInPeriod = (TimeComparing.isAfter(nowString, timePeriod.getStartTime()) ||
-                TimeComparing.isEquals(nowString, timePeriod.getStartTime()))
-                &&
-                (TimeComparing.isBefore(nowString, timePeriod.getEndTime()) ||
-                TimeComparing.isEquals(nowString, timePeriod.getEndTime()));
+        boolean isInPeriod = TimeComparing.inPeriod(timePeriod.getStartTime(), timePeriod.getEndTime(), nowString);
+//                (TimeComparing.isAfter(nowString, timePeriod.getStartTime()) ||
+//                TimeComparing.isEquals(nowString, timePeriod.getStartTime()))
+//                &&
+//                (TimeComparing.isBefore(nowString, timePeriod.getEndTime()) ||
+//                TimeComparing.isEquals(nowString, timePeriod.getEndTime()));
          // 如果点击保存的时间是在要关闭的时间段内
         if(isInPeriod) {
             DevicePolicyUtil.lockNow(this);

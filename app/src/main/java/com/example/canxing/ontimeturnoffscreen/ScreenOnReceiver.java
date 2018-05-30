@@ -25,7 +25,7 @@ public class ScreenOnReceiver extends BroadcastReceiver {
         if(action.equals(Intent.ACTION_SCREEN_ON)){
             Calendar now = Calendar.getInstance();
             String nowString = now.get(Calendar.HOUR_OF_DAY) + ":" + now.get(Calendar.MINUTE);
-            nowString = "17:07";
+            //nowString = "17:07";
             boolean nowTimeInPeriod = isTimeInPeriod(context, nowString);
             if(nowTimeInPeriod) {
                 DevicePolicyUtil.lockNow(context);
@@ -42,6 +42,7 @@ public class ScreenOnReceiver extends BroadcastReceiver {
             if(TimeComparing.inPeriod(time.getStartTime(), time.getEndTime(), nowString)) {
                 return true;
             }
+            Log.i("isTimeInPeriod", nowString);
         }
         return false;
     }
