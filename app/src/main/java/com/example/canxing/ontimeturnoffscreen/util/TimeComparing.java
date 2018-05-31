@@ -7,6 +7,8 @@ import android.util.Log;
  * 或者判断一个时间是否在两个时间之间
  */
 public class TimeComparing {
+    public static final String MAX_TIME = "23:59";
+    public static final String MIN_TIME = "0:0";
     /**
      * 判断t1时间字符串代表的时间是否在startTime和endTIme两个时间字符串代表的时间之间
      * 如果在，返回true，否则返回false
@@ -26,7 +28,12 @@ public class TimeComparing {
             if (isBefore(startTime, endTime)) {
                 return isAfter(t1, startTime) && isBefore(t1, endTime);
             } else if (isAfter(startTime, endTime)) {
-                return !isAfter(t1, endTime) && !isBefore(t1, startTime);
+                return inPeriod(startTime, MAX_TIME, t1) || inPeriod(MIN_TIME, endTime, t1);
+                //如果开始时间是在结束时间之后，说明这个时间段跨天
+//                String[] strs = endTime.split(":");
+//                String newEndTime = (Integer.parseInt(strs[0]) + 24) + ":" + strs[1];
+//                return inPeriod(startTime, newEndTime, t1);
+                //return !isAfter(t1, endTime) && !isBefore(t1, startTime);
             } else {
                 return isEquals(t1, startTime);
             }

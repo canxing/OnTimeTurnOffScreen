@@ -32,6 +32,10 @@ public class TimePeriod {
     private int isOn;           //是否开启，0表示关闭，1表示开启
     private int isEveryDay;     //是否每天都运行，0表示不是，1表示每天运行
 
+    public TimePeriod(int startHour, int startMinute, int endHour, int endMinute, int isEveryday) {
+        this(startHour, startMinute, endHour, endMinute, ON, isEveryday);
+    }
+
     public String getStartTime() {
         return startHour + ":" + startMinute;
     }

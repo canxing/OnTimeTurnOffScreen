@@ -1,15 +1,10 @@
 package com.example.canxing.ontimeturnoffscreen;
 
-import android.app.admin.DevicePolicyManager;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
-import com.example.canxing.ontimeturnoffscreen.db.DBHelper;
 import com.example.canxing.ontimeturnoffscreen.db.TimePeriodDB;
 import com.example.canxing.ontimeturnoffscreen.model.TimePeriod;
 import com.example.canxing.ontimeturnoffscreen.util.DevicePolicyUtil;
@@ -37,7 +32,8 @@ public class ScreenOnReceiver extends BroadcastReceiver {
     }
 
     private boolean isTimeInPeriod(Context context, String nowString) {
-        List<TimePeriod> times = TimePeriodDB.getTimes(context);
+        TimePeriodDB timePeriodDB = new TimePeriodDB(context);
+        List<TimePeriod> times = timePeriodDB.getTimes();
         for(TimePeriod time : times) {
             if(TimeComparing.inPeriod(time.getStartTime(), time.getEndTime(), nowString)) {
                 return true;

@@ -42,12 +42,12 @@
         </RelativeLayout>
 
         <LinearLayout
+            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="50dp">
+            android:layout_height="100dp">
             <Button
-                android:id="@+id/modify"
-                android:onClick="modifyBtnListener"
-                android:text="保存"
+                android:onClick="deleteTimePeriod"
+                android:text="删除"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
         </LinearLayout>

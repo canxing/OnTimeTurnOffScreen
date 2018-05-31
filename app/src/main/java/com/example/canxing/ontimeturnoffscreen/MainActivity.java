@@ -35,11 +35,13 @@ public class MainActivity extends AppCompatActivity {
     private Button addBtn;
     private TimePeriodAdapter adapter;
 
+    private TimePeriodDB timePeriodDB;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        clearDB();
+        //clearDB();
         init();
         startForegroundService();
     }
@@ -63,9 +65,10 @@ public class MainActivity extends AppCompatActivity {
      * 初始化函数，用于初始化控件以及响应等操作的初始化
      */
     private void init() {
+        timePeriodDB = new TimePeriodDB(this);
         addBtn = findViewById(R.id.add_time);
         timeShowView = findViewById(R.id.time_show_view);
-        adapter = new TimePeriodAdapter(this, TimePeriodDB.getTimes(this));
+        adapter = new TimePeriodAdapter(this, timePeriodDB.getTimes());
         timeShowView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -77,6 +80,7 @@ public class MainActivity extends AppCompatActivity {
                 intent.putExtra(TimePeriod.COLUMN_END_HOUR, timePeriod.getEndHour());
                 intent.putExtra(TimePeriod.COLUMN_END_MINUTE, timePeriod.getEndMinute());
                 intent.putExtra(TimePeriod.COLUMN_IS_EVERY_DAY, timePeriod.getIsEveryDay());
+                intent.putExtra(TimePeriod.COLUMN_ID, timePeriod.getId());
                 startActivityForResult(intent, MODIFYCODE);
                 Log.i("listview onItemClickListener", "over....");
             }
@@ -126,7 +130,7 @@ public class MainActivity extends AppCompatActivity {
         Log.i("onActivityResult" , requestCode + "-" + resultCode);
         if(requestCode == SETTINGCODE && resultCode == 1){
             adapter.clear();
-            adapter.addAll(TimePeriodDB.getTimes(this));
+            adapter.addAll(timePeriodDB.getTimes());
             adapter.notifyDataSetChanged();
 //            if(data != null){
 //                TimePeriod time = new TimePeriod();
@@ -141,7 +145,7 @@ public class MainActivity extends AppCompatActivity {
 //            }
         } else if (requestCode == MODIFYCODE && resultCode == ModifyTimeActivity.RESULTCODE) {
             adapter.clear();
-            adapter.addAll(TimePeriodDB.getTimes(this));
+            adapter.addAll(timePeriodDB.getTimes());
             adapter.notifyDataSetChanged();
         }
         super.onActivityResult(requestCode, resultCode, data);
