@@ -33,7 +33,7 @@ public class ScreenOnReceiver extends BroadcastReceiver {
 
     private boolean isTimeInPeriod(Context context, String nowString) {
         TimePeriodDB timePeriodDB = new TimePeriodDB(context);
-        List<TimePeriod> times = timePeriodDB.getTimes();
+        List<TimePeriod> times = timePeriodDB.getItemsIsOn();
         for(TimePeriod time : times) {
             if(TimeComparing.inPeriod(time.getStartTime(), time.getEndTime(), nowString)) {
                 return true;

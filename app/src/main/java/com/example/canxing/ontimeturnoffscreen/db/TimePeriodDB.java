@@ -16,9 +16,46 @@ import java.util.List;
  */
 public class TimePeriodDB {
     private static final String TAG = "TimePeriodDB";
+    private static final String[] TIMPERIODCOLUMNS = {TimePeriod.COLUMN_ID, TimePeriod.COLUMN_START_HOUR, TimePeriod.COLUMN_START_MINUTE,
+            TimePeriod.COLUMN_END_MINUTE, TimePeriod.COLUMN_END_HOUR, TimePeriod.COLUMN_IS_ON, TimePeriod.COLUMN_IS_EVERY_DAY};
+
     private Context context;
     public TimePeriodDB(Context context) {
         this.context = context;
+    }
+
+    /**
+     * 返回TimePeriod数据库表中所有表示打开的时间段
+     * @return
+     */
+    public List<TimePeriod> getItemsIsOn() {
+        String selection = TimePeriod.COLUMN_IS_ON + " = ?";
+        String[] args = {TimePeriod.ON + ""};
+        return getTimes(false, TIMPERIODCOLUMNS, selection, args, null, null, null, null);
+    }
+
+    /**
+     * 修改一个时间段是否开启的标志
+     * @param id 时间段id
+     * @param isOn true表示开启，false表示关闭
+     */
+    public void updateTimePeriodOnById(int id, boolean isOn) {
+        ContentValues values = new ContentValues();
+        if(isOn) {
+            values.put(TimePeriod.COLUMN_IS_ON, TimePeriod.ON);
+        } else {
+            values.put(TimePeriod.COLUMN_IS_ON, TimePeriod.OFF);
+        }
+        String where = "id = ?";
+        String[] args = {id + ""};
+        update(values, where, args);
+    }
+
+    private void update(ContentValues values, String where, String[] args) {
+        DBHelper dbHelper = new DBHelper(context, DBHelper.DBNAME);
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        db.update(TimePeriod.TABLENAME, values, where, args);
+        dbHelper.close();
     }
 
     /**
@@ -65,12 +102,16 @@ public class TimePeriodDB {
      * @return
      */
     public List<TimePeriod> getTimes() {
+        List<TimePeriod> times = getTimes(false, TIMPERIODCOLUMNS, null, null, null, null, null, null);
+        return times;
+    }
+    private List<TimePeriod> getTimes(boolean distinct, String[] column, String selection, String[] args, String groupBy,
+                                      String having, String orderBy, String limit) {
         List<TimePeriod> times = new ArrayList<>();
         DBHelper dbHelper = new DBHelper(context, DBHelper.DBNAME);
         SQLiteDatabase db = dbHelper.getReadableDatabase();
-        String[] columns = {TimePeriod.COLUMN_ID, TimePeriod.COLUMN_START_HOUR, TimePeriod.COLUMN_START_MINUTE,
-                TimePeriod.COLUMN_END_MINUTE, TimePeriod.COLUMN_END_HOUR, TimePeriod.COLUMN_IS_ON, TimePeriod.COLUMN_IS_EVERY_DAY};
-        Cursor cursor = db.query(true, TimePeriod.TABLENAME, columns, null, null, null, null, null, null);
+        Cursor cursor = db.query(distinct, TimePeriod.TABLENAME, column, selection, args,
+                groupBy, having, orderBy, limit);
         while(cursor.moveToNext()) {
             TimePeriod time = new TimePeriod();
             time.setId(cursor.getInt(cursor.getColumnIndex(TimePeriod.COLUMN_ID)));

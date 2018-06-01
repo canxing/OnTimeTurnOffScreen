@@ -24,7 +24,7 @@ public class TimeSettingActivity extends AppCompatActivity {
     public static final int RESULTCODE = 0x001;
     private TimePicker startTime;
     private TimePicker endTime;
-    private CheckBox everyday;
+    //private CheckBox everyday;
 
     private TimePeriodDB timePeriodDB;
 
@@ -50,8 +50,8 @@ public class TimeSettingActivity extends AppCompatActivity {
             Toast.makeText(this,"起始时间和结束时间不能相等", Toast.LENGTH_LONG).show();
             return;
         }
-        boolean everyDay = everyday.isChecked();
-        String message = "却定在时间" + startHour + "点" + startMinute + "分到" + endHour + "点" + endMinute + "分之间关闭屏幕吗?";
+        //boolean everyDay = everyday.isChecked();
+        String message = "确定在时间" + startHour + "点" + startMinute + "分到" + endHour + "点" + endMinute + "分之间关闭屏幕吗?";
 
         //作为是否立即关闭屏幕的判断条件
         boolean isCloseScreenNow = false;
@@ -65,11 +65,11 @@ public class TimeSettingActivity extends AppCompatActivity {
                 //验证当前时间是否在定义时间段之内，如果是，则立即关闭屏幕并保存到数据库中
                 TimePeriod timePeriod = new TimePeriod(startHour, startMinute, endHour, endMinute);
                 timePeriod.setIsOn(TimePeriod.ON);
-                if(everyDay) {
-                    timePeriod.setIsEveryDay(TimePeriod.ON);
-                } else {
-                    timePeriod.setIsEveryDay(TimePeriod.OFF);
-                }
+//                if(everyDay) {
+//                    timePeriod.setIsEveryDay(TimePeriod.ON);
+//                } else {
+//                    timePeriod.setIsEveryDay(TimePeriod.OFF);
+//                }
                 Calendar now = Calendar.getInstance();
                 String nowString = now.get(Calendar.HOUR_OF_DAY) + ":" + now.get(Calendar.MINUTE);
                 boolean isInPeriod = TimeComparing.inPeriod(timePeriod.getStartTime(), timePeriod.getEndTime(), nowString);
@@ -114,7 +114,7 @@ public class TimeSettingActivity extends AppCompatActivity {
     private void init() {
         startTime = findViewById(R.id.start_time_picker);
         endTime = findViewById(R.id.end_time_picker);
-        everyday = findViewById(R.id.every_day_radio);
+//        everyday = findViewById(R.id.every_day_radio);
         startTime.setIs24HourView(true);
         endTime.setIs24HourView(true);
 

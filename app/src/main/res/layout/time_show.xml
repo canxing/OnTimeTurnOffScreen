@@ -23,6 +23,7 @@
             android:focusableInTouchMode="false"
             android:layout_marginEnd="0dp" />
 
+    <!--
         <TextView
             android:id="@+id/every_day_text"
             android:text="每天"
@@ -30,5 +31,6 @@
             android:layout_below="@id/time_show_text"
             android:layout_width="100sp"
             android:layout_height="wrap_content" />
+    -->
     </RelativeLayout>
 

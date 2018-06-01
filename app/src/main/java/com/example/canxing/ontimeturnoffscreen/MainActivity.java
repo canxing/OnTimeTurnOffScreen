@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.ListView;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -41,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        //clearDB();
+        clearDB();
         init();
         startForegroundService();
     }
@@ -131,7 +132,8 @@ public class MainActivity extends AppCompatActivity {
         if(requestCode == SETTINGCODE && resultCode == 1){
             adapter.clear();
             adapter.addAll(timePeriodDB.getTimes());
-            adapter.notifyDataSetChanged();
+            adapter.notifyDataSetInvalidated();
+            //adapter.notifyDataSetChanged();
 //            if(data != null){
 //                TimePeriod time = new TimePeriod();
 //                time.setStartHour(data.getIntExtra(TimePeriod.COLUMN_START_HOUR, 0));
@@ -146,7 +148,7 @@ public class MainActivity extends AppCompatActivity {
         } else if (requestCode == MODIFYCODE && resultCode == ModifyTimeActivity.RESULTCODE) {
             adapter.clear();
             adapter.addAll(timePeriodDB.getTimes());
-            adapter.notifyDataSetChanged();
+            adapter.notifyDataSetInvalidated();
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
@@ -189,9 +191,10 @@ public class MainActivity extends AppCompatActivity {
             if(convertView == null) {
                 convertView = LayoutInflater.from(context).inflate(R.layout.time_show,null);
                 holder = new ViewHolder();
+                holder.position = position;
                 holder.timeText = convertView.findViewById(R.id.time_show_text);
                 holder.onSwitch = convertView.findViewById(R.id.on_switch);
-                holder.eveyDayText = convertView.findViewById(R.id.every_day_text);
+//                holder.eveyDayText = convertView.findViewById(R.id.every_day_text);
                 convertView.setTag(holder);
             } else {
                 holder = (ViewHolder) convertView.getTag();
@@ -199,16 +202,23 @@ public class MainActivity extends AppCompatActivity {
             TimePeriod time = times.get(position);
             String period = time.getStartTime() + "-" + time.getEndTime();
             holder.timeText.setText(period);
-            if(time.getIsEveryDay() == TimePeriod.ON){
-                holder.eveyDayText.setText("每天");
-            } else {
-                holder.eveyDayText.setText("一次");
-            }
+//            if(time.getIsEveryDay() == TimePeriod.ON){
+//                holder.eveyDayText.setText("每天");
+//            } else {
+//                holder.eveyDayText.setText("一次");
+//            }
             if(time.getIsOn() == TimePeriod.ON) {
                 holder.onSwitch.setChecked(true);
             } else {
                 holder.onSwitch.setChecked(false);
             }
+            holder.onSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    Log.i(TAG + " switch", isChecked + " " + getItem(position).getId());
+                    timePeriodDB.updateTimePeriodOnById(getItem(position).getId(), isChecked);
+                }
+            });
             return convertView;
         }
 
@@ -217,6 +227,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         class ViewHolder {
+            int position;
             TextView timeText;
             Switch onSwitch;
             TextView eveyDayText;

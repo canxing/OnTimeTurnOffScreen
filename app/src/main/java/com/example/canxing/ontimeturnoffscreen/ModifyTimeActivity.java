@@ -35,7 +35,7 @@ public class ModifyTimeActivity extends AppCompatActivity {
 
     private TimePicker startPicker;
     private TimePicker endPicker;
-    private CheckBox everyday;
+//    private CheckBox everyday;
 
     private TimePeriodDB timePeriodDB;
 
@@ -44,7 +44,7 @@ public class ModifyTimeActivity extends AppCompatActivity {
     private int startMinute;
     private int endHour;
     private int endMinute;
-    private int isEveryday;
+//    private int isEveryday;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,7 +59,7 @@ public class ModifyTimeActivity extends AppCompatActivity {
         timePeriodDB = new TimePeriodDB(this);
         startPicker = findViewById(R.id.modify_start_time_picker);
         endPicker = findViewById(R.id.modify_end_time_picker);
-        everyday = findViewById(R.id.modify_every_day_radio);
+//        everyday = findViewById(R.id.modify_every_day_radio);
         startPicker.setIs24HourView(true);
         endPicker.setIs24HourView(true);
 
@@ -71,7 +71,7 @@ public class ModifyTimeActivity extends AppCompatActivity {
          startMinute = intent.getIntExtra(TimePeriod.COLUMN_START_MINUTE, 0);
          endHour = intent.getIntExtra(TimePeriod.COLUMN_END_HOUR, 0);
          endMinute = intent.getIntExtra(TimePeriod.COLUMN_END_MINUTE, 0);
-         isEveryday = intent.getIntExtra(TimePeriod.COLUMN_IS_EVERY_DAY, 0);
+//        isEveryday = intent.getIntExtra(TimePeriod.COLUMN_IS_EVERY_DAY, 0);
          id = intent.getIntExtra(TimePeriod.COLUMN_ID, 0);
 
         /**
@@ -81,11 +81,11 @@ public class ModifyTimeActivity extends AppCompatActivity {
          startPicker.setMinute(startMinute);
          endPicker.setHour(endHour);
          endPicker.setMinute(endMinute);
-         if(isEveryday == TimePeriod.ON) {
-             everyday.setChecked(true);
-         } else {
-             everyday.setChecked(false);
-         }
+ //        if(isEveryday == TimePeriod.ON) {
+ //            everyday.setChecked(true);
+ //        } else {
+ //            everyday.setChecked(false);
+ //        }
     }
 
     /**
@@ -99,29 +99,29 @@ public class ModifyTimeActivity extends AppCompatActivity {
         int modifyStartMinute = startPicker.getMinute();
         int modifyEndHour = endPicker.getHour();
         int modifyEndMinute = endPicker.getMinute();
-        boolean checkEveryday = everyday.isChecked();
+//        boolean checkEveryday = everyday.isChecked();
         if(modifyStartHour == modifyEndHour && modifyEndHour == modifyEndMinute) {
             Toast.makeText(this,"起始时间和结束时间不能相等", Toast.LENGTH_LONG).show();
             return;
         }
 
-        String message = "却定在时间" + modifyStartHour + "点" + modifyStartMinute + "分到"
+        String message = "确定在时间" + modifyStartHour + "点" + modifyStartMinute + "分到"
                 + modifyEndHour + "点" + modifyEndMinute + "分之间关闭屏幕吗?";
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage(message);
         builder.setPositiveButton("确认", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                int modifyIsEveryday = -1;
-                if (checkEveryday) {
-                    modifyIsEveryday = TimePeriod.ON;
-                } else {
-                    modifyIsEveryday = TimePeriod.OFF;
-                }
+//                int modifyIsEveryday = -1;
+//                if (checkEveryday) {
+//                    modifyIsEveryday = TimePeriod.ON;
+//                } else {
+//                    modifyIsEveryday = TimePeriod.OFF;
+//                }
                 //判断是否进行了修改
                 if (startHour == modifyStartHour && startMinute == modifyStartMinute
-                        && endHour == modifyEndHour && endMinute == modifyEndMinute
-                        && isEveryday == modifyIsEveryday) {
+                        && endHour == modifyEndHour && endMinute == modifyEndMinute){
+//                        && isEveryday == modifyIsEveryday) {
                     //如果没有修改就不用管它，让它自生自灭吧
                     setResult(RESULTCODE, null);
                     finish();
@@ -132,8 +132,8 @@ public class ModifyTimeActivity extends AppCompatActivity {
                     String nowString = now.get(Calendar.HOUR_OF_DAY) + ":" + now.get(Calendar.MINUTE);
                     boolean isInPeriod =
                             TimeComparing.inPeriod(timePeriod.getStartTime(), timePeriod.getEndTime(), nowString);
-                    timePeriodDB.update(new TimePeriod(startHour, startMinute, endHour, endMinute, isEveryday),
-                            new TimePeriod(modifyStartHour, modifyStartMinute, modifyEndHour, modifyEndMinute, modifyIsEveryday));
+                    timePeriodDB.update(new TimePeriod(startHour, startMinute, endHour, endMinute),
+                            new TimePeriod(modifyStartHour, modifyStartMinute, modifyEndHour, modifyEndMinute));
                     if(isInPeriod) {
                         //如果当前时间正好处在修改后的时间段之间
                         new AlertDialog.Builder(ModifyTimeActivity.this)
