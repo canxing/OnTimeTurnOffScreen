@@ -1,5 +1,7 @@
 package com.example.canxing.ontimeturnoffscreen;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -11,7 +13,10 @@ import static org.junit.Assert.*;
  */
 public class ExampleUnitTest {
     @Test
-    public void addition_isCorrect() {
-        assertEquals(4, 2 + 2);
+    public void test() throws JSONException {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("username", "username");
+        jsonObject.put("password", "password");
+        System.out.println(jsonObject.toString());
     }
 }

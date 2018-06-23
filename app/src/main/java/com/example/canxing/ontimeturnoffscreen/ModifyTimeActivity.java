@@ -1,29 +1,29 @@
 package com.example.canxing.ontimeturnoffscreen;
 
-import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.ImageSpan;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.CheckBox;
-import android.widget.RadioButton;
-import android.widget.SeekBar;
+import android.widget.EditText;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
-import com.example.canxing.ontimeturnoffscreen.db.DBHelper;
 import com.example.canxing.ontimeturnoffscreen.db.TimePeriodDB;
 import com.example.canxing.ontimeturnoffscreen.model.TimePeriod;
 import com.example.canxing.ontimeturnoffscreen.util.DevicePolicyUtil;
 import com.example.canxing.ontimeturnoffscreen.util.TimeComparing;
 
-import java.sql.Time;
+import java.io.FileNotFoundException;
 import java.util.Calendar;
 
 /**
@@ -32,19 +32,24 @@ import java.util.Calendar;
 public class ModifyTimeActivity extends AppCompatActivity {
     public static final String TAG = "ModifyTimeActivity";
     public static final int RESULTCODE = 0x002;
+    private static final int REQUEST_IMAGE_CODE = 0x001;
 
     private TimePicker startPicker;
     private TimePicker endPicker;
-//    private CheckBox everyday;
+    private EditText descriptText;
 
     private TimePeriodDB timePeriodDB;
+    private TimePeriod oldTimePeriod;
 
     private int id;
     private int startHour;
     private int startMinute;
     private int endHour;
     private int endMinute;
-//    private int isEveryday;
+
+    private String uriString;
+    private int cursroPosition;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,45 +57,66 @@ public class ModifyTimeActivity extends AppCompatActivity {
         init();
     }
 
-    /**
-     * 初始化活动
-     */
     private void init() {
         timePeriodDB = new TimePeriodDB(this);
         startPicker = findViewById(R.id.modify_start_time_picker);
         endPicker = findViewById(R.id.modify_end_time_picker);
-//        everyday = findViewById(R.id.modify_every_day_radio);
+        descriptText = findViewById(R.id.modify_time_descipt);
         startPicker.setIs24HourView(true);
         endPicker.setIs24HourView(true);
 
-        /**
-         * 因为是修改活动，因此需要从原有的对象数据进行修改
-         */
         Intent intent = getIntent();
-         startHour = intent.getIntExtra(TimePeriod.COLUMN_START_HOUR, 0);
-         startMinute = intent.getIntExtra(TimePeriod.COLUMN_START_MINUTE, 0);
-         endHour = intent.getIntExtra(TimePeriod.COLUMN_END_HOUR, 0);
-         endMinute = intent.getIntExtra(TimePeriod.COLUMN_END_MINUTE, 0);
-//        isEveryday = intent.getIntExtra(TimePeriod.COLUMN_IS_EVERY_DAY, 0);
-         id = intent.getIntExtra(TimePeriod.COLUMN_ID, 0);
+        int id = intent.getIntExtra(TimePeriod.COLUMN_ID, -1);
+        oldTimePeriod = timePeriodDB.getTimeById(id);
 
-        /**
-         * 将传输过来的值在UI上显示出来
-         */
+        startHour = oldTimePeriod.getStartHour();
+        startMinute = oldTimePeriod.getStartMinute();
+        endHour = oldTimePeriod.getEndHour();
+        endMinute = oldTimePeriod.getEndMinute();
+
         startPicker.setHour(startHour);
-         startPicker.setMinute(startMinute);
-         endPicker.setHour(endHour);
-         endPicker.setMinute(endMinute);
- //        if(isEveryday == TimePeriod.ON) {
- //            everyday.setChecked(true);
- //        } else {
- //            everyday.setChecked(false);
- //        }
+        startPicker.setMinute(startMinute);
+        endPicker.setHour(endHour);
+        endPicker.setMinute(endMinute);
+
+        descriptText.setText(toSpannableString(oldTimePeriod.getDescript()));
     }
 
-    /**
-     * 修改按钮的监听方法
-     */
+    private SpannableString toSpannableString(String text) {
+        int start = text.indexOf('#');
+        if(start == -1) {
+            return new SpannableString(text);
+        }
+        int end = text.lastIndexOf('#');
+        uriString = text.substring(start + 1, end);
+        Uri uri = Uri.parse(uriString);
+        SpannableString spannableString = null;
+        try {
+            getContentResolver().openInputStream(uri);
+            ImageSpan imageSpan = new ImageSpan(this, uri);
+            String[] strs = text.split("#");
+            cursroPosition = start;
+            if(start == 0) {
+                spannableString = new SpannableString("#" + strs[1]);
+            } else if(end == text.length() - 1) {
+                spannableString = new SpannableString(strs[0] + "#");
+            } else {
+                spannableString = new SpannableString(strs[0] + "#" + strs[2]);
+            }
+            spannableString.setSpan(imageSpan, start, start + 1, Spanned.SPAN_INCLUSIVE_EXCLUSIVE );
+        } catch (FileNotFoundException e) {
+            String[] strs = text.split("#");
+            if(start == 0) {
+                spannableString = new SpannableString(strs[1]);
+            } else if(end == text.length() - 1) {
+                spannableString = new SpannableString(strs[0]);
+            } else {
+                spannableString = new SpannableString(strs[0] + strs[2]);
+            }
+        }
+        return spannableString;
+    }
+
     public void modifyBtnListener() {
         /*
         获取修改的值
@@ -99,7 +125,6 @@ public class ModifyTimeActivity extends AppCompatActivity {
         int modifyStartMinute = startPicker.getMinute();
         int modifyEndHour = endPicker.getHour();
         int modifyEndMinute = endPicker.getMinute();
-//        boolean checkEveryday = everyday.isChecked();
         if(modifyStartHour == modifyEndHour && modifyEndHour == modifyEndMinute) {
             Toast.makeText(this,"起始时间和结束时间不能相等", Toast.LENGTH_LONG).show();
             return;
@@ -112,28 +137,23 @@ public class ModifyTimeActivity extends AppCompatActivity {
         builder.setPositiveButton("确认", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-//                int modifyIsEveryday = -1;
-//                if (checkEveryday) {
-//                    modifyIsEveryday = TimePeriod.ON;
-//                } else {
-//                    modifyIsEveryday = TimePeriod.OFF;
-//                }
                 //判断是否进行了修改
-                if (startHour == modifyStartHour && startMinute == modifyStartMinute
-                        && endHour == modifyEndHour && endMinute == modifyEndMinute){
-//                        && isEveryday == modifyIsEveryday) {
-                    //如果没有修改就不用管它，让它自生自灭吧
-                    setResult(RESULTCODE, null);
-                    finish();
-                } else {
+//                if (startHour == modifyStartHour && startMinute == modifyStartMinute
+//                        && endHour == modifyEndHour && endMinute == modifyEndMinute){
+//                    //如果没有修改就不用管它，让它自生自灭吧
+//                    setResult(RESULTCODE, null);
+//                    finish();
+//                } else {
                     //将修改保存在数据库中，并返回
                     TimePeriod timePeriod = new TimePeriod(modifyStartHour, modifyStartMinute, modifyEndHour, modifyEndMinute);
                     Calendar now = Calendar.getInstance();
                     String nowString = now.get(Calendar.HOUR_OF_DAY) + ":" + now.get(Calendar.MINUTE);
                     boolean isInPeriod =
                             TimeComparing.inPeriod(timePeriod.getStartTime(), timePeriod.getEndTime(), nowString);
-                    timePeriodDB.update(new TimePeriod(startHour, startMinute, endHour, endMinute),
-                            new TimePeriod(modifyStartHour, modifyStartMinute, modifyEndHour, modifyEndMinute));
+                    TimePeriod modifyTimePeriod = new TimePeriod(modifyStartHour, modifyStartMinute, modifyEndHour, modifyEndMinute);
+                    modifyTimePeriod.setDescript(getEditText());
+                    timePeriodDB.update(new TimePeriod(startHour, startMinute, endHour, endMinute), modifyTimePeriod);
+                            //new TimePeriod(modifyStartHour, modifyStartMinute, modifyEndHour, modifyEndMinute));
                     if(isInPeriod) {
                         //如果当前时间正好处在修改后的时间段之间
                         new AlertDialog.Builder(ModifyTimeActivity.this)
@@ -150,21 +170,75 @@ public class ModifyTimeActivity extends AppCompatActivity {
                         finish();
 
                     }
-                }
+//                }
             }
         });
         builder.setNegativeButton("取消", null);
         builder.create().show();
     }
-
     /**
-     * 删除按钮的监听事件
-     * @param view
+     * 获取时间段的输入描述，因为描述中可能有图片，所以需要进行转换
+     * @return
      */
-    public void deleteTimePeriod(View view) {
-        timePeriodDB.deleteById(id);
-        setResult(RESULTCODE, null);
-        finish();
+    private String getEditText() {
+        String text = descriptText.getText().toString();
+        String result = "";
+        int index = text.indexOf('#');
+        if( index == -1) {
+            result = text;
+        } else {
+            uriString = "#" + uriString + "#";
+            if (index == 0) {
+                result = uriString + text.substring(1);
+            } else if(index == text.length() - 1) {
+                result = text + uriString.substring(1);
+            } else {
+                String[] strs = text.split("#");
+                result = strs[0] + uriString + strs[1];
+            }
+        }
+        Log.i(TAG, result);
+        return result;
+    }
+
+    //由于技术原因，目前只能插入一张图片，这里用来判断是否已经插入了图片
+    private boolean allowChooseImage() {
+        if(uriString == null) {
+            return true;
+        }
+        Editable text = descriptText.getText();
+        if(cursroPosition >= text.length()) {
+            return true;
+        }
+        char ch = text.charAt(cursroPosition);
+        if( ch == '#') {
+            return false;
+        } else {
+            return true;
+        }
+    }
+    private void callGallery() {
+        Intent intent = new Intent(Intent.ACTION_PICK);
+        intent.setType("image/*");
+        startActivityForResult(intent, REQUEST_IMAGE_CODE);
+    }
+    private void insertImage(Uri uri) {
+        Editable text = descriptText.getText();
+        uriString = uri.toString();
+        ImageSpan imageSpan = new ImageSpan(this, uri);
+        SpannableString ss = new SpannableString("#");
+        ss.setSpan(imageSpan,0, 1, Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+        text.insert(cursroPosition, ss);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(requestCode == REQUEST_IMAGE_CODE) {
+            if(data != null) {
+                Uri uri = data.getData();
+                insertImage(uri);
+            }
+        }
     }
 
     @Override
@@ -174,6 +248,14 @@ public class ModifyTimeActivity extends AppCompatActivity {
                 Log.i(TAG, "保存");
                 modifyBtnListener();
                 return true;
+            case R.id.menu_image_choose:
+                if(allowChooseImage()) {
+                    cursroPosition = descriptText.getSelectionStart();
+                    callGallery();
+                } else {
+                    Toast.makeText(this, "sorry,只能插入一张图片", Toast.LENGTH_LONG).show();
+                }
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -181,7 +263,7 @@ public class ModifyTimeActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.meau, menu);
+        getMenuInflater().inflate(R.menu.meau_save, menu);
         return true;
     }
 }

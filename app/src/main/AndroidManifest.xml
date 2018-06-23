@@ -8,6 +8,7 @@
     <uses-permission android:name="android.permission.USES_POLICY_FORCE_LOCK" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission
         android:name="android.permission.DEVICE_POWER"
         tools:ignore="ProtectedPermissions" />
@@ -59,7 +60,8 @@
             android:enabled="true"
             android:exported="true" />
 
-        <activity android:name=".ModifyTimeActivity"></activity>
+        <activity android:name=".ModifyTimeActivity" />
+        <activity android:name=".TimePeriodShowActivity"></activity>
     </application>
 
 </manifest>

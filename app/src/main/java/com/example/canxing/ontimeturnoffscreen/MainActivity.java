@@ -3,17 +3,17 @@ package com.example.canxing.ontimeturnoffscreen;
 import android.app.admin.DevicePolicyManager;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
-import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ListView;
 import android.widget.Switch;
@@ -31,9 +31,9 @@ public class MainActivity extends AppCompatActivity {
     static final String TAG = "ScreenOffActivity";
     public static final int SETTINGCODE = 0x001;
     public static final int MODIFYCODE = 0x002;
+    private static final int REQUEST_TIME_SHOW = 0x003;
 
     private ListView timeShowView;
-    private Button addBtn;
     private TimePeriodAdapter adapter;
 
     private TimePeriodDB timePeriodDB;
@@ -67,7 +67,6 @@ public class MainActivity extends AppCompatActivity {
      */
     private void init() {
         timePeriodDB = new TimePeriodDB(this);
-        addBtn = findViewById(R.id.add_time);
         timeShowView = findViewById(R.id.time_show_view);
         adapter = new TimePeriodAdapter(this, timePeriodDB.getTimes());
         timeShowView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -75,22 +74,20 @@ public class MainActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Log.i("listview onItemClickListener", "start....");
                 TimePeriod timePeriod = (TimePeriod) parent.getItemAtPosition(position);
-                Intent intent = new Intent(MainActivity.this, ModifyTimeActivity.class);
-                intent.putExtra(TimePeriod.COLUMN_START_HOUR, timePeriod.getStartHour());
-                intent.putExtra(TimePeriod.COLUMN_START_MINUTE, timePeriod.getStartMinute());
-                intent.putExtra(TimePeriod.COLUMN_END_HOUR, timePeriod.getEndHour());
-                intent.putExtra(TimePeriod.COLUMN_END_MINUTE, timePeriod.getEndMinute());
-                intent.putExtra(TimePeriod.COLUMN_IS_EVERY_DAY, timePeriod.getIsEveryDay());
+                Intent intent = new Intent(MainActivity.this, TimePeriodShowActivity.class);
                 intent.putExtra(TimePeriod.COLUMN_ID, timePeriod.getId());
-                startActivityForResult(intent, MODIFYCODE);
+                startActivityForResult(intent, REQUEST_TIME_SHOW);
+//                intent.putExtra(TimePeriod.COLUMN_START_HOUR, timePeriod.getStartHour());
+//                intent.putExtra(TimePeriod.COLUMN_START_MINUTE, timePeriod.getStartMinute());
+//                intent.putExtra(TimePeriod.COLUMN_END_HOUR, timePeriod.getEndHour());
+//                intent.putExtra(TimePeriod.COLUMN_END_MINUTE, timePeriod.getEndMinute());
+//                intent.putExtra(TimePeriod.COLUMN_IS_EVERY_DAY, timePeriod.getIsEveryDay());
+//                intent.putExtra(TimePeriod.COLUMN_ID, timePeriod.getId());
+//                startActivityForResult(intent, MODIFYCODE);
                 Log.i("listview onItemClickListener", "over....");
             }
         });
         timeShowView.setAdapter(adapter);
-        addBtn.setOnClickListener((view)->{
-            Intent intent = new Intent(this, TimeSettingActivity.class);
-            startActivityForResult(intent, SETTINGCODE);
-        });
         if(!DevicePolicyUtil.isAdmin(this )) {
             registerDevicePolicy();
         }
@@ -133,7 +130,7 @@ public class MainActivity extends AppCompatActivity {
             adapter.clear();
             adapter.addAll(timePeriodDB.getTimes());
             adapter.notifyDataSetInvalidated();
-        } else if (requestCode == MODIFYCODE && resultCode == ModifyTimeActivity.RESULTCODE) {
+        } else if (requestCode == REQUEST_TIME_SHOW ) {
             adapter.clear();
             adapter.addAll(timePeriodDB.getTimes());
             adapter.notifyDataSetInvalidated();
@@ -174,13 +171,23 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
+        /**
+         * 本来应该使用 ViewHolder 静态类结合 convertView 缓存来返回试图，但是在处理元素删除时会越界，
+         * 关于数组越界问题还没有想好，暂时使用这种原始的方式来显示列表，比较好的是该程序一般不会使用很多元素
+         * @param position
+         * @param convertView
+         * @param parent
+         * @return
+         */
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             View item = LayoutInflater.from(context).inflate(R.layout.time_show, null);
             TextView timetext = item.findViewById(R.id.time_show_text);
             Switch onSwitch = item.findViewById(R.id.on_switch);
+            TextView descipt = item.findViewById(R.id.descript);
             TimePeriod time = times.get(position);
             timetext.setText(time.getStartTime() + "-" + time.getEndTime());
+            descipt.setText(time.getDescript());
             if(time.getIsOn() == TimePeriod.ON) {
                 onSwitch.setChecked(true);
             } else {
@@ -201,5 +208,22 @@ public class MainActivity extends AppCompatActivity {
         public void addAll(List<TimePeriod> times) {
             this.times.addAll(times);
         }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.time_preiod :
+                Intent intent = new Intent(this, TimeSettingActivity.class);
+                startActivityForResult(intent, SETTINGCODE);
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_add, menu);
+        return true;
     }
 }

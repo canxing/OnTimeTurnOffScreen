@@ -17,11 +17,20 @@ import java.util.List;
 public class TimePeriodDB {
     private static final String TAG = "TimePeriodDB";
     private static final String[] TIMPERIODCOLUMNS = {TimePeriod.COLUMN_ID, TimePeriod.COLUMN_START_HOUR, TimePeriod.COLUMN_START_MINUTE,
-            TimePeriod.COLUMN_END_MINUTE, TimePeriod.COLUMN_END_HOUR, TimePeriod.COLUMN_IS_ON, TimePeriod.COLUMN_IS_EVERY_DAY};
+            TimePeriod.COLUMN_END_MINUTE, TimePeriod.COLUMN_END_HOUR, TimePeriod.COLUMN_IS_ON, TimePeriod.COLUMN_IS_EVERY_DAY, TimePeriod.COLUMN_DESCRIPT};
 
     private Context context;
     public TimePeriodDB(Context context) {
         this.context = context;
+    }
+
+    public TimePeriod getTimeById(int id) {
+        String selection = TimePeriod.COLUMN_ID + " = ?";
+        String[] args = {String.valueOf(id)};
+        List<TimePeriod> timePeriods = getTimes(false, TIMPERIODCOLUMNS, selection,
+                args, null, null, null, null);
+        if(timePeriods.size() == 0) { return null; }
+        else { return timePeriods.get(0); }
     }
 
     /**
@@ -85,6 +94,7 @@ public class TimePeriodDB {
         values.put(TimePeriod.COLUMN_END_HOUR, fresh.getEndHour());
         values.put(TimePeriod.COLUMN_END_MINUTE, fresh.getEndMinute());
         values.put(TimePeriod.COLUMN_IS_EVERY_DAY, fresh.getIsEveryDay());
+        values.put(TimePeriod.COLUMN_DESCRIPT, fresh.getDescript());
         String where = TimePeriod.COLUMN_START_HOUR + " = ? and "
                 + TimePeriod.COLUMN_START_MINUTE + " = ? and "
                 + TimePeriod.COLUMN_END_HOUR + " = ? and "
@@ -121,6 +131,7 @@ public class TimePeriodDB {
             time.setEndMinute(cursor.getInt(cursor.getColumnIndex(TimePeriod.COLUMN_END_MINUTE)));
             time.setIsOn(cursor.getInt(cursor.getColumnIndex(TimePeriod.COLUMN_IS_ON)));
             time.setIsEveryDay(cursor.getInt(cursor.getColumnIndex(TimePeriod.COLUMN_IS_EVERY_DAY)));
+            time.setDescript(cursor.getString(cursor.getColumnIndex(TimePeriod.COLUMN_DESCRIPT)));
             times.add(time);
             Log.i(TAG, time.toString());
         }
@@ -142,6 +153,7 @@ public class TimePeriodDB {
         values.put(TimePeriod.COLUMN_END_MINUTE, timePeriod.getEndMinute());
         values.put(TimePeriod.COLUMN_IS_ON, timePeriod.getIsOn());
         values.put(TimePeriod.COLUMN_IS_EVERY_DAY, timePeriod.getIsEveryDay());
+        values.put(TimePeriod.COLUMN_DESCRIPT, timePeriod.getDescript());
         db.insert(TimePeriod.TABLENAME, null, values);
         dbHelper.close();
     }

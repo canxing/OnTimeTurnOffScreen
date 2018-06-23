@@ -16,12 +16,6 @@
                 android:layout_height="wrap_content">
 
             </ListView>
-            <Button
-                android:id="@+id/add_time"
-                android:text="添加"
-                android:layout_alignParentBottom="true"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
 
         </RelativeLayout>
 

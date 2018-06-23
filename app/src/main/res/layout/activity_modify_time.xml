@@ -5,13 +5,17 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ModifyTimeActivity">
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="200dp">
+            android:layout_height="100dp">
             <TimePicker
                 android:id="@+id/modify_start_time_picker"
                 android:timePickerMode="spinner"
@@ -21,7 +25,7 @@
         </LinearLayout>
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="200dp">
+            android:layout_height="100dp">
             <TimePicker
                 android:id="@+id/modify_end_time_picker"
                 android:timePickerMode="spinner"
@@ -29,29 +33,11 @@
                 android:layout_height="match_parent"
                 android:layout_centerVertical="true" />
         </LinearLayout>
-        <!--
-        <RelativeLayout
+        <EditText
+            android:id="@+id/modify_time_descipt"
             android:layout_width="match_parent"
-            android:layout_height="50dp">
-            <CheckBox
-                android:id="@+id/modify_every_day_radio"
-                android:text="@string/everyday"
-                android:layout_centerHorizontal="true"
-                android:layout_width="100dp"
-                android:layout_height="wrap_content" />
+            android:layout_height="wrap_content" />
 
-        </RelativeLayout>
-        -->
-
-        <LinearLayout
-            android:orientation="vertical"
-            android:layout_width="match_parent"
-            android:layout_height="100dp">
-            <Button
-                android:onClick="deleteTimePeriod"
-                android:text="删除"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-        </LinearLayout>
     </LinearLayout>
+    </ScrollView>
 </android.support.constraint.ConstraintLayout>

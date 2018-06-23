@@ -14,6 +14,7 @@ public class TimePeriod {
     public static final String COLUMN_END_MINUTE = "endminute";
     public static final String COLUMN_IS_ON = "ison";
     public static final String COLUMN_IS_EVERY_DAY = "everyday";
+    public static final String COLUMN_DESCRIPT = "descript";
     public static final String CREATE_TABLE =  "create table " + TABLENAME + "( "
             + COLUMN_ID + " integer primary key autoincrement, "
             + COLUMN_START_HOUR + " int not null, "
@@ -21,6 +22,7 @@ public class TimePeriod {
             + COLUMN_END_HOUR + " int not null, "
             + COLUMN_END_MINUTE + " int not null, "
             + COLUMN_IS_ON + " int not null, "
+            + COLUMN_DESCRIPT + " text, "
             + COLUMN_IS_EVERY_DAY + " int not null)" ;
     public static final int ON = 1;
     public static final int OFF = 0;
@@ -31,10 +33,15 @@ public class TimePeriod {
     private int endMinute;      //结束时间的分钟
     private int isOn;           //是否开启，0表示关闭，1表示开启
     private int isEveryDay;     //是否每天都运行，0表示不是，1表示每天运行
+    private String descript;    //关于这个时间段的描述
 
     public TimePeriod(int startHour, int startMinute, int endHour, int endMinute, int isEveryday) {
         this(startHour, startMinute, endHour, endMinute, ON, isEveryday);
     }
+
+    public void setDescript(String descript) { this.descript = descript; }
+
+    public String getDescript() { return descript; }
 
     public String getStartTime() {
         return startHour + ":" + startMinute;

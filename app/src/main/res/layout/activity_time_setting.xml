@@ -5,13 +5,17 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".TimeSettingActivity">
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="200dp">
+            android:layout_height="100dp">
             <TimePicker
                 android:id="@+id/start_time_picker"
                 android:timePickerMode="spinner"
@@ -21,7 +25,7 @@
         </LinearLayout>
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="200dp">
+            android:layout_height="100dp">
             <TimePicker
                 android:id="@+id/end_time_picker"
                 android:timePickerMode="spinner"
@@ -29,31 +33,11 @@
                 android:layout_height="match_parent"
                 android:layout_centerVertical="true" />
         </LinearLayout>
-        <!--
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="50dp">
-                <CheckBox
-                    android:id="@+id/every_day_radio"
-                    android:text="@string/everyday"
-                    android:layout_centerHorizontal="true"
-                    android:layout_width="100dp"
-                    android:layout_height="match_parent" />
-
-            </RelativeLayout>
-        -->
-
-        <!--
-        <LinearLayout
+        <EditText
+            android:id="@+id/time_period_description"
+            android:hint="时间段描述"
             android:layout_width="match_parent"
-            android:layout_height="50dp">
-            <Button
-                android:id="@+id/save"
-                android:onClick="saveBtnListener"
-                android:text="保存"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-        </LinearLayout>
-        -->
+            android:layout_height="wrap_content" />
     </LinearLayout>
+    </ScrollView>
 </android.support.constraint.ConstraintLayout>
