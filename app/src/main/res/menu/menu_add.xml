@@ -1,9 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
+
     <item
-        android:title="添加"
-        android:id="@+id/time_preiod"
-        app:showAsAction="always"/>
+        android:title="菜单"
+        android:icon="@mipmap/ic_launcher"
+        android:id="@+id/a"
+        app:showAsAction="always">
+        <menu>
+            <item
+                android:title="添加"
+                android:id="@+id/time_preiod"
+                app:showAsAction="always" />
+            <item
+                android:title="登陆"
+                android:id="@+id/menu_login"
+                app:showAsAction="always"/>
+            <item
+                android:title="上传"
+                android:id="@+id/menu_upload"
+                app:showAsAction="always"/>
+            <item
+                android:title="下载"
+                android:id="@+id/menu_download"
+                app:showAsAction="always" />
+        </menu>
+    </item>
+
+
+
 
 </menu>

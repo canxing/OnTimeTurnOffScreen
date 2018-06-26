@@ -8,6 +8,7 @@ import android.util.Log;
 
 import com.example.canxing.ontimeturnoffscreen.model.TimePeriod;
 
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,7 +18,8 @@ import java.util.List;
 public class TimePeriodDB {
     private static final String TAG = "TimePeriodDB";
     private static final String[] TIMPERIODCOLUMNS = {TimePeriod.COLUMN_ID, TimePeriod.COLUMN_START_HOUR, TimePeriod.COLUMN_START_MINUTE,
-            TimePeriod.COLUMN_END_MINUTE, TimePeriod.COLUMN_END_HOUR, TimePeriod.COLUMN_IS_ON, TimePeriod.COLUMN_IS_EVERY_DAY, TimePeriod.COLUMN_DESCRIPT};
+            TimePeriod.COLUMN_END_MINUTE, TimePeriod.COLUMN_END_HOUR, TimePeriod.COLUMN_IS_ON, TimePeriod.COLUMN_IS_EVERY_DAY,
+            TimePeriod.COLUMN_DESCRIPT, TimePeriod.COLUMN_USERNAME};
 
     private Context context;
     public TimePeriodDB(Context context) {
@@ -132,6 +134,7 @@ public class TimePeriodDB {
             time.setIsOn(cursor.getInt(cursor.getColumnIndex(TimePeriod.COLUMN_IS_ON)));
             time.setIsEveryDay(cursor.getInt(cursor.getColumnIndex(TimePeriod.COLUMN_IS_EVERY_DAY)));
             time.setDescript(cursor.getString(cursor.getColumnIndex(TimePeriod.COLUMN_DESCRIPT)));
+            time.setUsername(cursor.getString(cursor.getColumnIndex(TimePeriod.COLUMN_USERNAME)));
             times.add(time);
             Log.i(TAG, time.toString());
         }
@@ -154,7 +157,15 @@ public class TimePeriodDB {
         values.put(TimePeriod.COLUMN_IS_ON, timePeriod.getIsOn());
         values.put(TimePeriod.COLUMN_IS_EVERY_DAY, timePeriod.getIsEveryDay());
         values.put(TimePeriod.COLUMN_DESCRIPT, timePeriod.getDescript());
+        values.put(TimePeriod.COLUMN_USERNAME, timePeriod.getUsername());
         db.insert(TimePeriod.TABLENAME, null, values);
         dbHelper.close();
+    }
+
+    //获取登陆用户的所有时间段
+    public List<TimePeriod> getTimesByUsername(String username) {
+        String selections = TimePeriod.COLUMN_USERNAME + " = ?";
+        String[] args = {username};
+        return getTimes(false, TIMPERIODCOLUMNS, selections, args, null, null, null, null);
     }
 }

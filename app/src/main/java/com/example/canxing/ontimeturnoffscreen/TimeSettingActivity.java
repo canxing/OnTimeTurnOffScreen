@@ -3,6 +3,7 @@ package com.example.canxing.ontimeturnoffscreen;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -70,6 +71,7 @@ public class TimeSettingActivity extends AppCompatActivity {
                 TimePeriod timePeriod = new TimePeriod(startHour, startMinute, endHour, endMinute);
                 timePeriod.setIsOn(TimePeriod.ON);
                 timePeriod.setDescript(getEditText());
+                timePeriod.setUsername(getUsername());
                 Calendar now = Calendar.getInstance();
                 String nowString = now.get(Calendar.HOUR_OF_DAY) + ":" + now.get(Calendar.MINUTE);
                 boolean isInPeriod = TimeComparing.inPeriod(timePeriod.getStartTime(), timePeriod.getEndTime(), nowString);
@@ -124,6 +126,11 @@ public class TimeSettingActivity extends AppCompatActivity {
         }
         Log.i(TAG, result);
         return result;
+    }
+
+    private String getUsername() {
+        SharedPreferences sp = getSharedPreferences("user", MODE_PRIVATE);
+        return sp.getString("username", "admin");
     }
 
     private void init() {

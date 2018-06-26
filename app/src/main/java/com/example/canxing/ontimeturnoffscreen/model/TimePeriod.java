@@ -15,6 +15,7 @@ public class TimePeriod {
     public static final String COLUMN_IS_ON = "ison";
     public static final String COLUMN_IS_EVERY_DAY = "everyday";
     public static final String COLUMN_DESCRIPT = "descript";
+    public static final String COLUMN_USERNAME = "username";
     public static final String CREATE_TABLE =  "create table " + TABLENAME + "( "
             + COLUMN_ID + " integer primary key autoincrement, "
             + COLUMN_START_HOUR + " int not null, "
@@ -23,6 +24,7 @@ public class TimePeriod {
             + COLUMN_END_MINUTE + " int not null, "
             + COLUMN_IS_ON + " int not null, "
             + COLUMN_DESCRIPT + " text, "
+            + COLUMN_USERNAME + " text not null, "
             + COLUMN_IS_EVERY_DAY + " int not null)" ;
     public static final int ON = 1;
     public static final int OFF = 0;
@@ -34,6 +36,7 @@ public class TimePeriod {
     private int isOn;           //是否开启，0表示关闭，1表示开启
     private int isEveryDay;     //是否每天都运行，0表示不是，1表示每天运行
     private String descript;    //关于这个时间段的描述
+    private String username;    //拥有这个时间段的用户
 
     public TimePeriod(int startHour, int startMinute, int endHour, int endMinute, int isEveryday) {
         this(startHour, startMinute, endHour, endMinute, ON, isEveryday);
@@ -117,6 +120,14 @@ public class TimePeriod {
 
     public int getIsOn() {
         return isOn;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     @Override

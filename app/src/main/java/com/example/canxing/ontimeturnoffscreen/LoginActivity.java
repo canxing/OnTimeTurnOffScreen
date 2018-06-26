@@ -1,0 +1,204 @@
+package com.example.canxing.ontimeturnoffscreen;
+
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.AsyncTask;
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.util.Log;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
+
+import com.example.canxing.ontimeturnoffscreen.util.Tuple;
+import com.example.canxing.ontimeturnoffscreen.util.TwoTuple;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+
+public class LoginActivity extends AppCompatActivity {
+
+    private EditText inputUsername;
+    private EditText inputPassword;
+    private Button login;
+    private Button register;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_login);
+        init();
+    }
+    private void init() {
+        inputUsername = findViewById(R.id.login_username);
+        inputPassword = findViewById(R.id.login_password);
+        login = findViewById(R.id.login_login);
+        register = findViewById(R.id.login_register);
+        login.setOnClickListener((view)->{
+            loginEvent();
+        });
+        register.setOnClickListener((view)->{
+            registerEvent();
+        });
+    }
+
+    private void loginEvent(){
+        if(isEmpty(inputUsername) || isEmpty(inputPassword)){
+            Toast.makeText(this, "用户名或密码不能为空", Toast.LENGTH_LONG).show();
+            return ;
+        }
+        String username = inputUsername.getText().toString();
+        String password = inputPassword.getText().toString();
+        LoginTask loginTask = new LoginTask();
+        loginTask.execute("login", username, password);
+    }
+    private void registerEvent(){
+        if(isEmpty(inputUsername) || isEmpty(inputPassword)){
+            Toast.makeText(this, "用户名或密码不能为空", Toast.LENGTH_LONG).show();
+            return ;
+        }
+        String username = inputUsername.getText().toString();
+        String password = inputPassword.getText().toString();
+        LoginTask registerTask = new LoginTask();
+        registerTask.execute("register", username, password);
+    }
+
+
+    private class LoginTask extends AsyncTask<String, String, TwoTuple<String, String>> {
+        @Override
+        protected TwoTuple<String, String> doInBackground(String... strings) {
+            HttpURLConnection urlconn = null;
+            String text = "";
+            try {
+                URL url = new URL("http://192.168.43.142:8080");
+                urlconn = (HttpURLConnection) url.openConnection();
+                urlconn.setRequestMethod("POST");
+                urlconn.setDoOutput(true);
+                urlconn.setDoInput(true);
+                urlconn.setUseCaches(false);
+
+                String message = "";
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("task", strings[0]);
+                jsonObject.put("username", strings[1]);
+                jsonObject.put("password", strings[2]);
+                message = jsonObject.toString();
+
+                urlconn.setChunkedStreamingMode(message.length());
+                urlconn.connect();
+                OutputStream outputStream = urlconn.getOutputStream();
+                BufferedWriter out = new BufferedWriter(new OutputStreamWriter(outputStream));
+
+                Log.i("message", message);
+                out.write(message);
+                out.flush();
+                outputStream.close();
+                out.close();
+
+                InputStream inputStream = urlconn.getInputStream();
+                BufferedReader in = new BufferedReader(new InputStreamReader(inputStream));
+
+                String line = "";
+                while((line = in.readLine()) != null) {
+                    text += line;
+                }
+                inputStream.close();
+                in.close();
+                Log.i("on execute", "text");
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            } finally {
+                if(urlconn != null) {
+                    urlconn.disconnect();
+                }
+            }
+            Log.i("on execute", "over");
+            return Tuple.towTuple(strings[0], text);
+        }
+
+        @Override
+        protected void onPostExecute(TwoTuple<String, String> s) {
+            if(s.first.equals("login")){
+                login(s.second);
+            } else {
+                register(s.second);
+            }
+        }
+    }
+    private void login(String isSuccess) {
+        if(isSuccess.equals("true")) {
+            loginSuccess();
+        } else {
+            loginFail();
+        }
+    }
+    private void register(String isRegister) {
+        if(isRegister.equals("true")) {
+            registerSuccess();
+        } else {
+            registerFail();
+        }
+    }
+
+    private void loginSuccess() {
+        Toast.makeText(this, "登陆成功", Toast.LENGTH_SHORT).show();
+        writeUser();
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+        finish();
+    }
+    private void loginFail() {
+        Log.i("login fail", "");
+        Toast.makeText(this, "用户名密码不匹配", Toast.LENGTH_LONG).show();
+    }
+    private void registerSuccess() {
+        Toast.makeText(this, "注册成功，你已登陆", Toast.LENGTH_SHORT).show();
+        writeUser();
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+        finish();
+    }
+    private void registerFail(){
+        Log.i("register fail", "");
+        Toast.makeText(this, "该用户名已经有人使用，请重新输入", Toast.LENGTH_LONG).show();
+    }
+
+    /**
+     * 向 SharedPreferences中写入登陆者的用户名
+     * 只能用于登陆或者注册成功的情况
+     */
+    private void writeUser() {
+        Log.i("write user", "starting..");
+        SharedPreferences sp = getSharedPreferences("user", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sp.edit();
+        editor.putString("username", inputUsername.getText().toString());
+        editor.putString("password", inputPassword.getText().toString());
+        editor.commit();
+        Log.i("write user", "end...");
+    }
+
+    private boolean isEmpty(EditText editText){
+        if(editText == null){
+            return true;
+        } else if(editText.getText().toString().equals("")){
+            return true;
+        } else {
+            return false;
+        }
+    }
+}

@@ -3,7 +3,9 @@ package com.example.canxing.ontimeturnoffscreen;
 import android.app.admin.DevicePolicyManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -18,12 +20,28 @@ import android.widget.CompoundButton;
 import android.widget.ListView;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.canxing.ontimeturnoffscreen.db.DBHelper;
 import com.example.canxing.ontimeturnoffscreen.db.TimePeriodDB;
 import com.example.canxing.ontimeturnoffscreen.model.TimePeriod;
 import com.example.canxing.ontimeturnoffscreen.util.DevicePolicyUtil;
+import com.example.canxing.ontimeturnoffscreen.util.Tuple;
+import com.example.canxing.ontimeturnoffscreen.util.TwoTuple;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,11 +56,13 @@ public class MainActivity extends AppCompatActivity {
 
     private TimePeriodDB timePeriodDB;
 
+    private String username;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        //clearDB();
+        clearDB();
         init();
         startForegroundService();
     }
@@ -58,17 +78,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * 返回数据库中的所有时间段
-     * @return
-     */
-
-    /**
      * 初始化函数，用于初始化控件以及响应等操作的初始化
      */
     private void init() {
+        username = getUsername();
         timePeriodDB = new TimePeriodDB(this);
         timeShowView = findViewById(R.id.time_show_view);
-        adapter = new TimePeriodAdapter(this, timePeriodDB.getTimes());
+        adapter = new TimePeriodAdapter(this, timePeriodDB.getTimesByUsername(username));
         timeShowView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -77,13 +93,6 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent = new Intent(MainActivity.this, TimePeriodShowActivity.class);
                 intent.putExtra(TimePeriod.COLUMN_ID, timePeriod.getId());
                 startActivityForResult(intent, REQUEST_TIME_SHOW);
-//                intent.putExtra(TimePeriod.COLUMN_START_HOUR, timePeriod.getStartHour());
-//                intent.putExtra(TimePeriod.COLUMN_START_MINUTE, timePeriod.getStartMinute());
-//                intent.putExtra(TimePeriod.COLUMN_END_HOUR, timePeriod.getEndHour());
-//                intent.putExtra(TimePeriod.COLUMN_END_MINUTE, timePeriod.getEndMinute());
-//                intent.putExtra(TimePeriod.COLUMN_IS_EVERY_DAY, timePeriod.getIsEveryDay());
-//                intent.putExtra(TimePeriod.COLUMN_ID, timePeriod.getId());
-//                startActivityForResult(intent, MODIFYCODE);
                 Log.i("listview onItemClickListener", "over....");
             }
         });
@@ -91,6 +100,16 @@ public class MainActivity extends AppCompatActivity {
         if(!DevicePolicyUtil.isAdmin(this )) {
             registerDevicePolicy();
         }
+    }
+
+    // 获取Sharedperences中的用户名，如果没有返回admin
+    private String getUsername(){
+        SharedPreferences sp = getSharedPreferences("user", MODE_PRIVATE);
+        return sp.getString("username", "admin");
+    }
+    private String getPassword() {
+        SharedPreferences sp = getSharedPreferences("user", MODE_PRIVATE);
+        return sp.getString("password", "admin");
     }
 
     /**
@@ -128,11 +147,11 @@ public class MainActivity extends AppCompatActivity {
         Log.i("onActivityResult" , requestCode + "-" + resultCode);
         if(requestCode == SETTINGCODE && resultCode == 1){
             adapter.clear();
-            adapter.addAll(timePeriodDB.getTimes());
+            adapter.addAll(timePeriodDB.getTimesByUsername(getUsername()));
             adapter.notifyDataSetInvalidated();
         } else if (requestCode == REQUEST_TIME_SHOW ) {
             adapter.clear();
-            adapter.addAll(timePeriodDB.getTimes());
+            adapter.addAll(timePeriodDB.getTimesByUsername(getUsername()));
             adapter.notifyDataSetInvalidated();
         }
         super.onActivityResult(requestCode, resultCode, data);
@@ -169,6 +188,7 @@ public class MainActivity extends AppCompatActivity {
         public long getItemId(int position) {
             return position;
         }
+        public List<TimePeriod> getTimes() { return times; }
 
 
         /**
@@ -201,13 +221,148 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
             return item;
-
-
         }
 
         public void addAll(List<TimePeriod> times) {
             this.times.addAll(times);
         }
+    }
+
+    private class NetTask extends AsyncTask<String, String, TwoTuple<String, String>> {
+
+        @Override
+        protected TwoTuple<String, String> doInBackground(String... strings) {
+            HttpURLConnection urlconn = null;
+            String text = "";
+            try {
+                //URL url = new URL("http://192.168.43.142:8080");
+                URL url = new URL("http://192.168.50.174:8080");
+                urlconn = (HttpURLConnection) url.openConnection();
+                urlconn.setRequestMethod("POST");
+                urlconn.setDoOutput(true);
+                urlconn.setDoInput(true);
+                urlconn.setUseCaches(false);
+                String message = strings[0];
+                urlconn.setChunkedStreamingMode(message.length());
+                urlconn.connect();
+                BufferedWriter out = new BufferedWriter(new OutputStreamWriter(urlconn.getOutputStream()));
+                Log.i("message", message);
+                out.write(message);
+                out.flush();
+                out.close();
+
+                BufferedReader in = new BufferedReader(new InputStreamReader(urlconn.getInputStream()));
+                String line = null;
+                while((line = in.readLine()) != null) {
+                    text += line;
+                }
+
+                in.close();
+                Log.i("test", text);
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                if(urlconn != null) {
+                    urlconn.disconnect();
+                }
+            }
+            Log.i("on execute", "over");
+            try {
+                JSONObject jsonObject = new JSONObject(strings[0]);
+                String task = jsonObject.getString("task");
+                return Tuple.towTuple(task, text);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            return Tuple.towTuple(strings[0], text);
+        }
+
+        @Override
+        protected void onPostExecute(TwoTuple<String, String> stringStringTwoTuple) {
+            if(stringStringTwoTuple.first.equals("upload")) {
+                uploadHandler(stringStringTwoTuple.second);
+            } else if(stringStringTwoTuple.first.equals("download")) {
+                downloadHandler(stringStringTwoTuple.second);
+            }
+        }
+    }
+
+    //没有登陆返回false, 登陆了返回true
+    private boolean isLogin() {
+        return !getUsername().equals("admin");
+    }
+    private void uploadHandler(String data) {
+        Log.i("upalod handler", data);
+        if(data.equals("true")) {
+            Toast.makeText(this, "上传成功", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, "上传失败", Toast.LENGTH_SHORT).show();
+        }
+    }
+    private void downloadHandler(String data) {
+        Log.i("handle download", data);
+        try {
+            JSONArray jsonArray = new JSONArray(data);
+            String str = null;
+            for(int i = 0; i < jsonArray.length(); i++) {
+                str = jsonArray.getString(i);
+                Log.i("str ", str);
+                TimePeriod timePeriod = JSONtoTimePeriod(str);
+                timePeriodDB.insert(timePeriod);
+            }
+            adapter.clear();
+            adapter.addAll(timePeriodDB.getTimesByUsername(getUsername()));
+            adapter.notifyDataSetInvalidated();
+            Toast.makeText(this, "下载成功", Toast.LENGTH_LONG).show();
+        } catch (JSONException e) {
+            Toast.makeText(this, "转换错误", Toast.LENGTH_LONG).show();
+            e.printStackTrace();
+        }
+    }
+
+    //将一个TimePeriod列表转换为一个JSON数组
+    private String timePeriodsToJSON(List<TimePeriod> timePeriods) throws JSONException {
+        JSONArray array = new JSONArray();
+        for(TimePeriod timePeriod : timePeriods) {
+            array.put(timePeriodToJSON(timePeriod));
+        }
+        return array.toString();
+    }
+
+    //将一个TimePeriod转换为JSON字符串
+    private String timePeriodToJSON(TimePeriod timePeriod) throws JSONException {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put(TimePeriod.COLUMN_START_HOUR, timePeriod.getStartHour());
+        jsonObject.put(TimePeriod.COLUMN_START_MINUTE, timePeriod.getStartMinute());
+        jsonObject.put(TimePeriod.COLUMN_END_HOUR, timePeriod.getEndHour());
+        jsonObject.put(TimePeriod.COLUMN_END_MINUTE, timePeriod.getEndMinute());
+        jsonObject.put(TimePeriod.COLUMN_IS_ON, timePeriod.getIsOn());
+        jsonObject.put(TimePeriod.COLUMN_DESCRIPT, timePeriod.getDescript());
+        return jsonObject.toString();
+    }
+
+    //将一个JSON字符串转换为TimePeriod对象
+    private TimePeriod JSONtoTimePeriod(String jsonString) throws JSONException {
+        TimePeriod timePeriod = new TimePeriod();
+        Log.i("json to timeperiod", jsonString);
+        JSONObject jsonObject = new JSONObject(jsonString);
+        timePeriod.setStartHour(jsonObject.getInt(TimePeriod.COLUMN_START_HOUR));
+        timePeriod.setStartMinute(jsonObject.getInt(TimePeriod.COLUMN_START_MINUTE));
+        timePeriod.setEndHour(jsonObject.getInt(TimePeriod.COLUMN_END_HOUR));
+        timePeriod.setEndMinute(jsonObject.getInt(TimePeriod.COLUMN_END_MINUTE));
+        timePeriod.setIsOn(jsonObject.getInt(TimePeriod.COLUMN_IS_ON));
+        timePeriod.setDescript(jsonObject.getString(TimePeriod.COLUMN_DESCRIPT));
+        timePeriod.setUsername(getUsername());
+        Log.i("json to timeperiod", "over");
+        return timePeriod;
+    }
+
+    private void callLogin() {
+        Intent intent1 = new Intent(this, LoginActivity.class);
+        startActivity(intent1);
+        finish();
     }
 
     @Override
@@ -216,6 +371,48 @@ public class MainActivity extends AppCompatActivity {
             case R.id.time_preiod :
                 Intent intent = new Intent(this, TimeSettingActivity.class);
                 startActivityForResult(intent, SETTINGCODE);
+                break;
+            case R.id.menu_download:
+                if(isLogin()) {
+                    JSONObject jsonObject = new JSONObject();
+                    try {
+                        jsonObject.put("task", "download");
+                        jsonObject.put("username", getUsername());
+                        jsonObject.put("password", getPassword());
+                        NetTask netTask = new NetTask();
+                        netTask.execute(jsonObject.toString());
+                    } catch (JSONException e) {
+                        Toast.makeText(this, "转换错误", Toast.LENGTH_SHORT).show();
+                        e.printStackTrace();
+                        return true;
+                    }
+                } else {
+                    callLogin();
+                }
+                break;
+            case R.id.menu_upload:
+                if(isLogin()) {
+                    List<TimePeriod> timePeriods = adapter.getTimes();
+                    String timePeriodsJson = "";
+                    try {
+                        timePeriodsJson = timePeriodsToJSON(timePeriods);
+                        JSONObject jsonObject = new JSONObject();
+                        jsonObject.put("task", "upload");
+                        jsonObject.put("username", getUsername());
+                        jsonObject.put("password", getPassword());
+                        jsonObject.put("data", timePeriodsJson);
+                        NetTask netTask = new NetTask();
+                        netTask.execute(jsonObject.toString());
+                    } catch (JSONException e) {
+                        Toast.makeText(this, "转换错误", Toast.LENGTH_SHORT).show();
+                        return true;
+                    }
+                } else {
+                    callLogin();
+                }
+                break;
+            case R.id.menu_login:
+                callLogin();
                 break;
         }
         return super.onOptionsItemSelected(item);
