@@ -17,6 +17,9 @@ import com.example.canxing.ontimeturnoffscreen.model.TimePeriod;
 
 import java.io.FileNotFoundException;
 
+/**
+ * 时间段信息显示界面
+ */
 public class TimePeriodShowActivity extends AppCompatActivity {
     public static final int RESULT_CDOE_TIME_DELETE = 0x001;
 
@@ -35,6 +38,7 @@ public class TimePeriodShowActivity extends AppCompatActivity {
         setContentView(R.layout.activity_time_period_show);
         init();
     }
+
     private void init() {
         Intent intent = getIntent();
         int id = intent.getIntExtra(TimePeriod.COLUMN_ID, -1);
@@ -67,6 +71,9 @@ public class TimePeriodShowActivity extends AppCompatActivity {
         }
         return spannableString;
     }
+
+    //使用startActivityForResult跳转到时间段修改界面
+    //同时发送时间段id
     private void callModifyTime() {
         Intent intent = new Intent(this, ModifyTimeActivity.class);
         intent.putExtra(TimePeriod.COLUMN_ID, timePeriod.getId());

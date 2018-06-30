@@ -26,6 +26,17 @@ public class TimePeriodDB {
         this.context = context;
     }
 
+    ////////////////////////////////////////////////////////////////////////////////
+    //
+    //  查询
+    //
+    ////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * 根据时间段id返回对应的时间段对象
+     * @param id 时间段id
+     * @return 对应时间段的对象，如果没有，返回null
+     */
     public TimePeriod getTimeById(int id) {
         String selection = TimePeriod.COLUMN_ID + " = ?";
         String[] args = {String.valueOf(id)};
@@ -44,71 +55,12 @@ public class TimePeriodDB {
         String[] args = {TimePeriod.ON + ""};
         return getTimes(false, TIMPERIODCOLUMNS, selection, args, null, null, null, null);
     }
-
-    /**
-     * 修改一个时间段是否开启的标志
-     * @param id 时间段id
-     * @param isOn true表示开启，false表示关闭
-     */
-    public void updateTimePeriodOnById(int id, boolean isOn) {
-        ContentValues values = new ContentValues();
-        if(isOn) {
-            values.put(TimePeriod.COLUMN_IS_ON, TimePeriod.ON);
-        } else {
-            values.put(TimePeriod.COLUMN_IS_ON, TimePeriod.OFF);
-        }
-        String where = "id = ?";
-        String[] args = {id + ""};
-        update(values, where, args);
+    //获取登陆用户的所有时间段
+    public List<TimePeriod> getTimesByUsername(String username) {
+        String selections = TimePeriod.COLUMN_USERNAME + " = ?";
+        String[] args = {username};
+        return getTimes(false, TIMPERIODCOLUMNS, selections, args, null, null, null, null);
     }
-
-    private void update(ContentValues values, String where, String[] args) {
-        DBHelper dbHelper = new DBHelper(context, DBHelper.DBNAME);
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-        db.update(TimePeriod.TABLENAME, values, where, args);
-        dbHelper.close();
-    }
-
-    /**
-     * 根据时间段的id删除在数据库表中删除一个时间段
-     * @param id
-     */
-    public void deleteById(int id) {
-        DBHelper dbHelper = new DBHelper(context, DBHelper.DBNAME);
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-        String where = "id = ?";
-        String[] args = {String.valueOf(id)};
-        db.delete(TimePeriod.TABLENAME, where, args);
-        dbHelper.close();
-    }
-
-    /**
-     * 更新一个时间段
-     * @param old
-     * @param fresh
-     */
-    public void update(TimePeriod old, TimePeriod fresh) {
-        DBHelper dbHelper = new DBHelper(context, DBHelper.DBNAME);
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put(TimePeriod.COLUMN_START_HOUR, fresh.getStartHour());
-        values.put(TimePeriod.COLUMN_START_MINUTE, fresh.getStartMinute());
-        values.put(TimePeriod.COLUMN_END_HOUR, fresh.getEndHour());
-        values.put(TimePeriod.COLUMN_END_MINUTE, fresh.getEndMinute());
-        values.put(TimePeriod.COLUMN_IS_EVERY_DAY, fresh.getIsEveryDay());
-        values.put(TimePeriod.COLUMN_DESCRIPT, fresh.getDescript());
-        String where = TimePeriod.COLUMN_START_HOUR + " = ? and "
-                + TimePeriod.COLUMN_START_MINUTE + " = ? and "
-                + TimePeriod.COLUMN_END_HOUR + " = ? and "
-                + TimePeriod.COLUMN_END_MINUTE + " = ? and "
-                + TimePeriod.COLUMN_IS_EVERY_DAY + " = ?"
-                ;
-        String[] args = {String.valueOf(old.getStartHour()), String.valueOf(old.getStartMinute()),
-                String.valueOf(old.getEndHour()), String.valueOf(old.getEndMinute()), String.valueOf(old.getIsEveryDay())};
-        db.update(TimePeriod.TABLENAME, values, where, args);
-        dbHelper.close();
-    }
-
     /**
      * 获取所有时间段对象
      * @return
@@ -117,6 +69,8 @@ public class TimePeriodDB {
         List<TimePeriod> times = getTimes(false, TIMPERIODCOLUMNS, null, null, null, null, null, null);
         return times;
     }
+
+    //查询操作的基本操作，所有查询操作都可以透过这个方法进行查询
     private List<TimePeriod> getTimes(boolean distinct, String[] column, String selection, String[] args, String groupBy,
                                       String having, String orderBy, String limit) {
         List<TimePeriod> times = new ArrayList<>();
@@ -141,6 +95,90 @@ public class TimePeriodDB {
         dbHelper.close();
         return times;
     }
+    ////////////////////////////////////////////////////////////////////////////////
+    //
+    //  修改
+    //
+    ////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * 修改一个时间段是否开启的标志
+     * @param id 时间段id
+     * @param isOn true表示开启，false表示关闭
+     */
+    public void updateTimePeriodOnById(int id, boolean isOn) {
+        ContentValues values = new ContentValues();
+        if(isOn) {
+            values.put(TimePeriod.COLUMN_IS_ON, TimePeriod.ON);
+        } else {
+            values.put(TimePeriod.COLUMN_IS_ON, TimePeriod.OFF);
+        }
+        String where = "id = ?";
+        String[] args = {id + ""};
+        update(values, where, args);
+    }
+
+    /**
+     * 更新一个时间段
+     * @param old
+     * @param fresh
+     */
+    public void update(TimePeriod old, TimePeriod fresh) {
+        ContentValues values = new ContentValues();
+        values.put(TimePeriod.COLUMN_START_HOUR, fresh.getStartHour());
+        values.put(TimePeriod.COLUMN_START_MINUTE, fresh.getStartMinute());
+        values.put(TimePeriod.COLUMN_END_HOUR, fresh.getEndHour());
+        values.put(TimePeriod.COLUMN_END_MINUTE, fresh.getEndMinute());
+        values.put(TimePeriod.COLUMN_IS_EVERY_DAY, fresh.getIsEveryDay());
+        values.put(TimePeriod.COLUMN_DESCRIPT, fresh.getDescript());
+        String where = TimePeriod.COLUMN_START_HOUR + " = ? and "
+                + TimePeriod.COLUMN_START_MINUTE + " = ? and "
+                + TimePeriod.COLUMN_END_HOUR + " = ? and "
+                + TimePeriod.COLUMN_END_MINUTE + " = ? and "
+                + TimePeriod.COLUMN_IS_EVERY_DAY + " = ?"
+                ;
+        String[] args = {String.valueOf(old.getStartHour()), String.valueOf(old.getStartMinute()),
+                String.valueOf(old.getEndHour()), String.valueOf(old.getEndMinute()), String.valueOf(old.getIsEveryDay())};
+        update(values, where, args);
+    }
+    /**
+     * 修改数据的基础，所有修改操作都可以将值传入这里进行响应的修改
+     * @param values 要修改的值
+     * @param where 要修改的行的标识
+     * @param args 和where对应的?占位符的值
+     */
+    private void update(ContentValues values, String where, String[] args) {
+        DBHelper dbHelper = new DBHelper(context, DBHelper.DBNAME);
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        db.update(TimePeriod.TABLENAME, values, where, args);
+        dbHelper.close();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    //
+    //  删除
+    //
+    ////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * 根据时间段的id删除在数据库表中删除一个时间段
+     * @param id
+     */
+    public void deleteById(int id) {
+        DBHelper dbHelper = new DBHelper(context, DBHelper.DBNAME);
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        String where = "id = ?";
+        String[] args = {String.valueOf(id)};
+        db.delete(TimePeriod.TABLENAME, where, args);
+        dbHelper.close();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    //
+    //  插入
+    //
+    ////////////////////////////////////////////////////////////////////////////////
+
 
     /**
      * 将一个时间段对象保存到数据库表中
@@ -162,10 +200,4 @@ public class TimePeriodDB {
         dbHelper.close();
     }
 
-    //获取登陆用户的所有时间段
-    public List<TimePeriod> getTimesByUsername(String username) {
-        String selections = TimePeriod.COLUMN_USERNAME + " = ?";
-        String[] args = {username};
-        return getTimes(false, TIMPERIODCOLUMNS, selections, args, null, null, null, null);
-    }
 }

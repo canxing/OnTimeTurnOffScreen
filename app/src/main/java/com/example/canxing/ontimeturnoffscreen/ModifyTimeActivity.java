@@ -82,6 +82,11 @@ public class ModifyTimeActivity extends AppCompatActivity {
         descriptText.setText(toSpannableString(oldTimePeriod.getDescript()));
     }
 
+    /**
+     * 把一个字符串中的图片标识符标识转换为标识的图片
+     * @param text 字符串
+     * @return
+     */
     private SpannableString toSpannableString(String text) {
         int start = text.indexOf('#');
         if(start == -1) {
@@ -117,10 +122,9 @@ public class ModifyTimeActivity extends AppCompatActivity {
         return spannableString;
     }
 
+    //修改按钮执行方法
     public void modifyBtnListener() {
-        /*
-        获取修改的值
-         */
+        //获取修改的值
         int modifyStartHour = startPicker.getHour();
         int modifyStartMinute = startPicker.getMinute();
         int modifyEndHour = endPicker.getHour();
@@ -217,11 +221,15 @@ public class ModifyTimeActivity extends AppCompatActivity {
             return true;
         }
     }
+
+    //使用startActivityForResult跳转到系统图库选择图片
     private void callGallery() {
         Intent intent = new Intent(Intent.ACTION_PICK);
         intent.setType("image/*");
         startActivityForResult(intent, REQUEST_IMAGE_CODE);
     }
+
+    //在一个输入框中插入uri表示的图片
     private void insertImage(Uri uri) {
         Editable text = descriptText.getText();
         uriString = uri.toString();

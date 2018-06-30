@@ -62,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        clearDB();
+        //clearDB();
         init();
         startForegroundService();
     }
@@ -77,9 +77,7 @@ public class MainActivity extends AppCompatActivity {
         dbHelper.close();
     }
 
-    /**
-     * 初始化函数，用于初始化控件以及响应等操作的初始化
-     */
+    // 初始化函数，用于初始化控件以及响应等操作的初始化
     private void init() {
         username = getUsername();
         timePeriodDB = new TimePeriodDB(this);
@@ -123,9 +121,7 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(intent, 0);
     }
 
-    /**
-     * 开启前台服务，保证程序不中断
-     */
+    // 开启前台服务，保证程序不中断
     private void startForegroundService() {
         Intent intent = new Intent(this, RegisterReceiverService.class);
         startService(intent);
@@ -136,12 +132,7 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
-    /**
-     * 这里接收了保存的时间段，其实可以就在定义界面搞定
-     * @param requestCode
-     * @param resultCode
-     * @param data
-     */
+     // 这里接收了保存的时间段，其实可以就在定义界面搞定
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         Log.i("onActivityResult" , requestCode + "-" + resultCode);
@@ -156,6 +147,10 @@ public class MainActivity extends AppCompatActivity {
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
+
+    /**
+     * 用于在主界面显示的适配器
+     */
     class TimePeriodAdapter extends BaseAdapter {
         private List<TimePeriod> times = new ArrayList<>();
         private Context context;
@@ -165,9 +160,7 @@ public class MainActivity extends AppCompatActivity {
             this.times.addAll(times);
         }
 
-        /**
-         * 清空数据
-         */
+        // 清空数据
         public void clear() {
             times.clear();
         }
@@ -194,10 +187,6 @@ public class MainActivity extends AppCompatActivity {
         /**
          * 本来应该使用 ViewHolder 静态类结合 convertView 缓存来返回试图，但是在处理元素删除时会越界，
          * 关于数组越界问题还没有想好，暂时使用这种原始的方式来显示列表，比较好的是该程序一般不会使用很多元素
-         * @param position
-         * @param convertView
-         * @param parent
-         * @return
          */
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
@@ -359,6 +348,7 @@ public class MainActivity extends AppCompatActivity {
         return timePeriod;
     }
 
+    //跳转到登陆界面
     private void callLogin() {
         Intent intent1 = new Intent(this, LoginActivity.class);
         startActivity(intent1);

@@ -25,6 +25,10 @@ import com.example.canxing.ontimeturnoffscreen.util.TimeComparing;
 
 import java.util.Calendar;
 
+
+/**
+ * 时间段新增界面
+ */
 public class TimeSettingActivity extends AppCompatActivity {
     public static final String TAG = "TimeSettingActivity";
     public static final int RESULTCODE = 0x001;
@@ -45,7 +49,7 @@ public class TimeSettingActivity extends AppCompatActivity {
 
     }
 
-     // 保存响应事件
+    // 保存响应事件
     public void saveBtnListener() {
         int startHour = startTime.getHour();
         int startMinute = startTime.getMinute();
@@ -128,6 +132,7 @@ public class TimeSettingActivity extends AppCompatActivity {
         return result;
     }
 
+    //获取SharedPreference中保存的用户名
     private String getUsername() {
         SharedPreferences sp = getSharedPreferences("user", MODE_PRIVATE);
         return sp.getString("username", "admin");
@@ -144,6 +149,7 @@ public class TimeSettingActivity extends AppCompatActivity {
         timePeriodDB = new TimePeriodDB(this);
     }
 
+    //使用startActivityForResult跳转到系统图库选择图片返回
     private void callGallery() {
         Intent intent = new Intent(Intent.ACTION_PICK);
         intent.setType("image/*");

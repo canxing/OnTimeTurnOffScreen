@@ -53,6 +53,7 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
+    //登陆事件，接受用户输入并发送服务器进行验证
     private void loginEvent(){
         if(isEmpty(inputUsername) || isEmpty(inputPassword)){
             Toast.makeText(this, "用户名或密码不能为空", Toast.LENGTH_LONG).show();
@@ -63,6 +64,7 @@ public class LoginActivity extends AppCompatActivity {
         LoginTask loginTask = new LoginTask();
         loginTask.execute("login", username, password);
     }
+    //注册事件，接受用户输入发送到服务器进行注册
     private void registerEvent(){
         if(isEmpty(inputUsername) || isEmpty(inputPassword)){
             Toast.makeText(this, "用户名或密码不能为空", Toast.LENGTH_LONG).show();
@@ -75,6 +77,88 @@ public class LoginActivity extends AppCompatActivity {
     }
 
 
+    //对登陆操作的返回结果进行处理
+    //isSuccess为'true'或'false'
+    private void login(String isSuccess) {
+        if(isSuccess.equals("true")) {
+            loginSuccess();
+        } else {
+            loginFail();
+        }
+    }
+
+    /**
+     * 对注册结果进行处理
+     * @param isRegister 'true'或者'false'
+     */
+    private void register(String isRegister) {
+        if(isRegister.equals("true")) {
+            registerSuccess();
+        } else {
+            registerFail();
+        }
+    }
+
+    //登陆成功执行的操作
+    private void loginSuccess() {
+        Toast.makeText(this, "登陆成功", Toast.LENGTH_SHORT).show();
+        writeUser();
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+        finish();
+    }
+    //登陆失败执行的操作
+    private void loginFail() {
+        Log.i("login fail", "");
+        Toast.makeText(this, "用户名密码不匹配", Toast.LENGTH_LONG).show();
+    }
+
+    //注册成功执行的操作
+    private void registerSuccess() {
+        Toast.makeText(this, "注册成功，你已登陆", Toast.LENGTH_SHORT).show();
+        writeUser();
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+        finish();
+    }
+
+    //注册失败进行的操作
+    private void registerFail(){
+        Log.i("register fail", "");
+        Toast.makeText(this, "该用户名已经有人使用，请重新输入", Toast.LENGTH_LONG).show();
+    }
+
+    /**
+     * 向 SharedPreferences中写入登陆者的用户名
+     * 只能用于登陆或者注册成功的情况
+     */
+    private void writeUser() {
+        Log.i("write user", "starting..");
+        SharedPreferences sp = getSharedPreferences("user", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sp.edit();
+        editor.putString("username", inputUsername.getText().toString());
+        editor.putString("password", inputPassword.getText().toString());
+        editor.commit();
+        Log.i("write user", "end...");
+    }
+
+    /**
+     * 判断EditText是否有输入
+     * @param editText
+     * @return
+     */
+    private boolean isEmpty(EditText editText){
+        if(editText == null){
+            return true;
+        } else if(editText.getText().toString().equals("")){
+            return true;
+        } else {
+            return false;
+        }
+    }
+    /**
+     * 登陆和注册任务，执行将数据发送到服务器进行注册和登陆
+     */
     private class LoginTask extends AsyncTask<String, String, TwoTuple<String, String>> {
         @Override
         protected TwoTuple<String, String> doInBackground(String... strings) {
@@ -138,67 +222,6 @@ public class LoginActivity extends AppCompatActivity {
             } else {
                 register(s.second);
             }
-        }
-    }
-    private void login(String isSuccess) {
-        if(isSuccess.equals("true")) {
-            loginSuccess();
-        } else {
-            loginFail();
-        }
-    }
-    private void register(String isRegister) {
-        if(isRegister.equals("true")) {
-            registerSuccess();
-        } else {
-            registerFail();
-        }
-    }
-
-    private void loginSuccess() {
-        Toast.makeText(this, "登陆成功", Toast.LENGTH_SHORT).show();
-        writeUser();
-        Intent intent = new Intent(this, MainActivity.class);
-        startActivity(intent);
-        finish();
-    }
-    private void loginFail() {
-        Log.i("login fail", "");
-        Toast.makeText(this, "用户名密码不匹配", Toast.LENGTH_LONG).show();
-    }
-    private void registerSuccess() {
-        Toast.makeText(this, "注册成功，你已登陆", Toast.LENGTH_SHORT).show();
-        writeUser();
-        Intent intent = new Intent(this, MainActivity.class);
-        startActivity(intent);
-        finish();
-    }
-    private void registerFail(){
-        Log.i("register fail", "");
-        Toast.makeText(this, "该用户名已经有人使用，请重新输入", Toast.LENGTH_LONG).show();
-    }
-
-    /**
-     * 向 SharedPreferences中写入登陆者的用户名
-     * 只能用于登陆或者注册成功的情况
-     */
-    private void writeUser() {
-        Log.i("write user", "starting..");
-        SharedPreferences sp = getSharedPreferences("user", MODE_PRIVATE);
-        SharedPreferences.Editor editor = sp.edit();
-        editor.putString("username", inputUsername.getText().toString());
-        editor.putString("password", inputPassword.getText().toString());
-        editor.commit();
-        Log.i("write user", "end...");
-    }
-
-    private boolean isEmpty(EditText editText){
-        if(editText == null){
-            return true;
-        } else if(editText.getText().toString().equals("")){
-            return true;
-        } else {
-            return false;
         }
     }
 }
