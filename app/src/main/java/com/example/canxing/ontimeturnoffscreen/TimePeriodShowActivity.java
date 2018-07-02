@@ -1,6 +1,7 @@
 package com.example.canxing.ontimeturnoffscreen;
 
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -61,14 +62,15 @@ public class TimePeriodShowActivity extends AppCompatActivity {
         }
         int end = text.lastIndexOf('#');
         String uriString = text.substring(start + 1, end);
-        Uri uri = Uri.parse(uriString);
-        try {
-            getContentResolver().openInputStream(uri);
-            ImageSpan imageSpan = new ImageSpan(this, uri);
+        //Uri uri = Uri.parse(uriString);
+        //try {
+            //getContentResolver().openInputStream(uri);
+            ImageSpan imageSpan = new ImageSpan(this, BitmapFactory.decodeFile(uriString));
+            //ImageSpan imageSpan = new ImageSpan(this, uri);
             spannableString.setSpan(imageSpan, start, end + 1, Spanned.SPAN_INCLUSIVE_INCLUSIVE);
-        } catch (FileNotFoundException e) {
+        //} catch (FileNotFoundException e) {
             //e.printStackTrace();
-        }
+        //}
         return spannableString;
     }
 

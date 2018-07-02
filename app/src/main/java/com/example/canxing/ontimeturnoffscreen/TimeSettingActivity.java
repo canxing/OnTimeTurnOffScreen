@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -23,6 +24,11 @@ import com.example.canxing.ontimeturnoffscreen.model.TimePeriod;
 import com.example.canxing.ontimeturnoffscreen.util.DevicePolicyUtil;
 import com.example.canxing.ontimeturnoffscreen.util.TimeComparing;
 
+import java.io.BufferedOutputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Calendar;
 
 
@@ -174,9 +180,12 @@ public class TimeSettingActivity extends AppCompatActivity {
     }
     //把一个Uri代表的图片插入文字中
     private void insertImage(Uri uri) {
+        insertImage(uri.toString());
+    }
+    private void insertImage(String uri) {
         Editable text = descriptText.getText();
-        uriString = uri.toString();
-        ImageSpan imageSpan = new ImageSpan(this, uri);
+        uriString = uri;
+        ImageSpan imageSpan = new ImageSpan(this, BitmapFactory.decodeFile(uri));
         SpannableString ss = new SpannableString("#");
         ss.setSpan(imageSpan,0, 1, Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
         text.insert(cursroPosition, ss);
@@ -187,7 +196,23 @@ public class TimeSettingActivity extends AppCompatActivity {
         if(requestCode == REQUEST_IMAGE_CODE) {
             if(data != null) {
                 Uri uri = data.getData();
-                insertImage(uri);
+                String fileName = uri.toString().substring(uri.toString().lastIndexOf('/'));
+                String filePath = getFilesDir().toString() + fileName;
+                try(
+                    BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(filePath));
+                    InputStream in = getContentResolver().openInputStream(uri);){
+                    byte[] bytes = new byte[1024];
+                    int len = -1;
+                    while((len = in.read(bytes)) != -1) {
+                        out.write(bytes, 0, len);
+                        out.flush();
+                    }
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                insertImage(filePath);
                 Log.i(TAG + " On Activity Result", data.getData().toString());
             }
         }

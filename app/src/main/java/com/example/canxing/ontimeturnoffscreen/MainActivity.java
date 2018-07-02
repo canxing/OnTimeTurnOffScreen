@@ -224,8 +224,8 @@ public class MainActivity extends AppCompatActivity {
             HttpURLConnection urlconn = null;
             String text = "";
             try {
-                //URL url = new URL("http://192.168.43.142:8080");
-                URL url = new URL("http://192.168.50.174:8080");
+                URL url = new URL("http://192.168.43.142:8080");
+                //URL url = new URL("http://192.168.50.174:8080");
                 urlconn = (HttpURLConnection) url.openConnection();
                 urlconn.setRequestMethod("POST");
                 urlconn.setDoOutput(true);

@@ -2,6 +2,7 @@ package com.example.canxing.ontimeturnoffscreen;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -23,7 +24,12 @@ import com.example.canxing.ontimeturnoffscreen.model.TimePeriod;
 import com.example.canxing.ontimeturnoffscreen.util.DevicePolicyUtil;
 import com.example.canxing.ontimeturnoffscreen.util.TimeComparing;
 
+import java.io.BufferedOutputStream;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Calendar;
 
 /**
@@ -94,15 +100,17 @@ public class ModifyTimeActivity extends AppCompatActivity {
         }
         int end = text.lastIndexOf('#');
         uriString = text.substring(start + 1, end);
-        Uri uri = Uri.parse(uriString);
+        //Uri uri = Uri.parse(uriString);
         SpannableString spannableString = null;
         try {
-            getContentResolver().openInputStream(uri);
-            ImageSpan imageSpan = new ImageSpan(this, uri);
+            FileInputStream fileInputStream = new FileInputStream(uriString);
+            //getContentResolver().openInputStream(uri);
+            ImageSpan imageSpan = new ImageSpan(this, BitmapFactory.decodeStream(fileInputStream));
+            //ImageSpan imageSpan = new ImageSpan(this, uri);
             String[] strs = text.split("#");
             cursroPosition = start;
             if(start == 0) {
-                spannableString = new SpannableString("#" + strs[1]);
+                spannableString = new SpannableString("#" + strs[2]);
             } else if(end == text.length() - 1) {
                 spannableString = new SpannableString(strs[0] + "#");
             } else {
@@ -110,14 +118,15 @@ public class ModifyTimeActivity extends AppCompatActivity {
             }
             spannableString.setSpan(imageSpan, start, start + 1, Spanned.SPAN_INCLUSIVE_EXCLUSIVE );
         } catch (FileNotFoundException e) {
-            String[] strs = text.split("#");
-            if(start == 0) {
-                spannableString = new SpannableString(strs[1]);
-            } else if(end == text.length() - 1) {
-                spannableString = new SpannableString(strs[0]);
-            } else {
-                spannableString = new SpannableString(strs[0] + strs[2]);
-            }
+            spannableString = new SpannableString(text);
+//            String[] strs = text.split("#");
+//            if(start == 0) {
+//                spannableString = new SpannableString(strs[1]);
+//            } else if(end == text.length() - 1) {
+//                spannableString = new SpannableString(strs[0]);
+//            } else {
+//                spannableString = new SpannableString(strs[0] + strs[2]);
+//            }
         }
         return spannableString;
     }
@@ -238,13 +247,35 @@ public class ModifyTimeActivity extends AppCompatActivity {
         ss.setSpan(imageSpan,0, 1, Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
         text.insert(cursroPosition, ss);
     }
+    private void insertImage(String uri) {
+        uriString = uri;
+        Editable text = descriptText.getText();
+        ImageSpan imageSpan = new ImageSpan(this, BitmapFactory.decodeFile(uri));
+        SpannableString ss = new SpannableString("#");
+        ss.setSpan(imageSpan,0, 1, Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+        text.insert(cursroPosition, ss);
+    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(requestCode == REQUEST_IMAGE_CODE) {
             if(data != null) {
                 Uri uri = data.getData();
-                insertImage(uri);
+                String filePath = getFilesDir().toString() + uri.toString().substring(uri.toString().lastIndexOf('/'));
+                try(BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(filePath));
+                    InputStream in = getContentResolver().openInputStream(uri)){
+                    byte[] bytes = new byte[1024];
+                    int len = -1;
+                    while((len = in.read(bytes)) != -1) {
+                        out.write(bytes, 0, len);
+                        out.flush();
+                    }
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                insertImage(filePath);
             }
         }
     }
