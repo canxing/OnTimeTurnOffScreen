@@ -164,6 +164,7 @@ public class LoginActivity extends AppCompatActivity {
         protected TwoTuple<String, String> doInBackground(String... strings) {
             HttpURLConnection urlconn = null;
             String text = "";
+            TwoTuple<String, String> result = null;
             try {
                 URL url = new URL("http://192.168.43.142:8080");
                 urlconn = (HttpURLConnection) url.openConnection();
@@ -200,27 +201,33 @@ public class LoginActivity extends AppCompatActivity {
                 inputStream.close();
                 in.close();
                 Log.i("on execute", "text");
+                result = Tuple.towTuple(strings[0], text);
             } catch (MalformedURLException e) {
                 e.printStackTrace();
+                result = Tuple.towTuple("error", "网络错误，请检查后重试");
             } catch (IOException e) {
                 e.printStackTrace();
+                result = Tuple.towTuple("error", "网络错误，请检查后重试");
             } catch (JSONException e) {
                 e.printStackTrace();
+                result = Tuple.towTuple("error", "数据处理错误");
             } finally {
                 if(urlconn != null) {
                     urlconn.disconnect();
                 }
             }
             Log.i("on execute", "over");
-            return Tuple.towTuple(strings[0], text);
+            return result;
         }
 
         @Override
         protected void onPostExecute(TwoTuple<String, String> s) {
             if(s.first.equals("login")){
                 login(s.second);
-            } else {
+            } else if(s.first.equals("register")){
                 register(s.second);
+            } else {
+                Toast.makeText(LoginActivity.this, s.second, Toast.LENGTH_LONG).show();
             }
         }
     }

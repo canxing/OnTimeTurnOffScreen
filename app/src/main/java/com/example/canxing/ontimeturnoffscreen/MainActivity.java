@@ -223,6 +223,7 @@ public class MainActivity extends AppCompatActivity {
         protected TwoTuple<String, String> doInBackground(String... strings) {
             HttpURLConnection urlconn = null;
             String text = "";
+            TwoTuple<String, String> result = null;
             try {
                 URL url = new URL("http://192.168.43.142:8080");
                 //URL url = new URL("http://192.168.50.174:8080");
@@ -245,27 +246,29 @@ public class MainActivity extends AppCompatActivity {
                 while((line = in.readLine()) != null) {
                     text += line;
                 }
-
                 in.close();
                 Log.i("test", text);
+                JSONObject jsonObject = new JSONObject(strings[0]);
+                String task = jsonObject.getString("task");
+                result = Tuple.towTuple(task, text);
             } catch (MalformedURLException e) {
                 e.printStackTrace();
+                result = Tuple.towTuple("error", "网络错误，请检查后重试");
             } catch (IOException e) {
                 e.printStackTrace();
+                result = Tuple.towTuple("error", "网络错误，请检查后重试");
+                //result = Tuple.towTuple("error", "文件流错误");
+            } catch (JSONException e) {
+                e.printStackTrace();
+                result = Tuple.towTuple("error", "数据处理错误");
             } finally {
                 if(urlconn != null) {
                     urlconn.disconnect();
                 }
             }
             Log.i("on execute", "over");
-            try {
-                JSONObject jsonObject = new JSONObject(strings[0]);
-                String task = jsonObject.getString("task");
-                return Tuple.towTuple(task, text);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            return Tuple.towTuple(strings[0], text);
+            return result;
+            //return Tuple.towTuple(strings[0], text);
         }
 
         @Override
@@ -274,6 +277,8 @@ public class MainActivity extends AppCompatActivity {
                 uploadHandler(stringStringTwoTuple.second);
             } else if(stringStringTwoTuple.first.equals("download")) {
                 downloadHandler(stringStringTwoTuple.second);
+            } else {
+                Toast.makeText(MainActivity.this, stringStringTwoTuple.second, Toast.LENGTH_LONG).show();
             }
         }
     }
@@ -383,6 +388,10 @@ public class MainActivity extends AppCompatActivity {
             case R.id.menu_upload:
                 if(isLogin()) {
                     List<TimePeriod> timePeriods = adapter.getTimes();
+                    if(timePeriods.size() == 0) {
+                        Toast.makeText(this, "无数据上传", Toast.LENGTH_LONG).show();
+                        return true;
+                    }
                     String timePeriodsJson = "";
                     try {
                         timePeriodsJson = timePeriodsToJSON(timePeriods);

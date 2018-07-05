@@ -3,6 +3,7 @@ package com.example.canxing.ontimeturnoffscreen;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.util.Log;
 
 import com.example.canxing.ontimeturnoffscreen.db.TimePeriodDB;
@@ -32,15 +33,23 @@ public class ScreenOnReceiver extends BroadcastReceiver {
     }
 
     private boolean isTimeInPeriod(Context context, String nowString) {
+        String username = getUsername(context);
         TimePeriodDB timePeriodDB = new TimePeriodDB(context);
-        List<TimePeriod> times = timePeriodDB.getItemsIsOn();
+        List<TimePeriod> times = timePeriodDB.getTimesByUsername(username);
         for(TimePeriod time : times) {
-            if(TimeComparing.inPeriod(time.getStartTime(), time.getEndTime(), nowString)) {
-                return true;
+            if(time.getIsOn() == TimePeriod.ON) {
+                if (TimeComparing.inPeriod(time.getStartTime(), time.getEndTime(), nowString)) {
+                    return true;
+                }
             }
             Log.i("isTimeInPeriod", nowString);
         }
         return false;
+    }
+
+    private String getUsername(Context context) {
+        SharedPreferences sp = context.getSharedPreferences("user", context.MODE_PRIVATE);
+        return sp.getString("username", "admin");
     }
 
 }
